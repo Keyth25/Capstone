@@ -582,10 +582,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <section id="login-carousel" class="lg:col-span-6 relative h-64 lg:h-auto overflow-hidden group order-1 lg:order-2 bg-slate-950">
             <div id="carousel-track" class="flex h-full transition-transform duration-700 ease-in-out">
                 <div class="min-w-full h-full relative">
-                    <img src="uploads/carousel/cemetery%201.jpg" alt="Cemetery photo 1" class="w-full h-full object-cover">
+                    <img src="assets/carousel/cemetery%201.jpg" alt="Cemetery photo 1" class="w-full h-full object-cover">
                 </div>
                 <div class="min-w-full h-full relative">
-                    <img src="uploads/carousel/cemetery%2011.jpg" alt="Cemetery photo 11" class="w-full h-full object-cover">
+                    <img src="assets/carousel/cemetery%2011.jpg" alt="Cemetery photo 11" class="w-full h-full object-cover">
                 </div>
             </div>
 

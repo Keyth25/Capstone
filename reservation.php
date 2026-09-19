@@ -1733,7 +1733,7 @@ try {
         const CLASS_CARD = {
             mausoleum: {
                 name: 'MAUSOLEUM', headline: 'The Ultimate in Elegance and Privacy',
-                icon: 'landmark', accent: 'violet', img: 'uploads/carousel/mausoleum.jpg',
+                icon: 'landmark', accent: 'violet', img: 'assets/carousel/mausoleum.jpg',
                 features: [
                     { icon: 'snowflake',    text: 'Indoor, climate-controlled chambers' },
                     { icon: 'gem',          text: 'Elegant and modern design' },
@@ -1744,7 +1744,7 @@ try {
             },
             gold: {
                 name: 'GOLD', headline: 'Balance of Value & Beauty',
-                icon: 'star', accent: 'blue', img: 'uploads/carousel/cemetery%201.jpg',
+                icon: 'star', accent: 'blue', img: 'assets/carousel/cemetery%201.jpg',
                 features: [
                     { icon: 'map-pin',      text: 'Convenient location' },
                     { icon: 'ruler',        text: 'Standard plot size' },
@@ -1755,7 +1755,7 @@ try {
             },
             premium: {
                 name: 'PREMIUM', headline: 'Prestige & Prime Location',
-                icon: 'crown', accent: 'amber', img: 'uploads/carousel/cemetery%202.jpg',
+                icon: 'crown', accent: 'amber', img: 'assets/carousel/cemetery%202.jpg',
                 features: [
                     { icon: 'map-pin',    text: 'Prime location near the main garden' },
                     { icon: 'maximize-2', text: 'Spacious plot size' },
@@ -1766,7 +1766,7 @@ try {
             },
             standard: {
                 name: 'STANDARD', headline: 'Simple & Dignified',
-                icon: 'leaf', accent: 'slate', img: 'uploads/carousel/cemetery%203.jpg',
+                icon: 'leaf', accent: 'slate', img: 'assets/carousel/cemetery%203.jpg',
                 features: [
                     { icon: 'tag',           text: 'Affordable pricing' },
                     { icon: 'ruler',         text: 'Standard plot size' },
@@ -1777,7 +1777,7 @@ try {
             },
             apartment: {
                 name: 'APARTMENT', headline: 'Affordable & Practical',
-                icon: 'building-2', accent: 'teal', img: 'uploads/carousel/apartment.png',
+                icon: 'building-2', accent: 'teal', img: 'assets/carousel/apartment.png',
                 features: [
                     { icon: 'tag',        text: 'Most affordable option' },
                     { icon: 'building-2', text: 'Indoor, secure facility' },
