@@ -1,0 +1,31 @@
+/* mobile.css — responsive tweaks for user & staff pages */
+@media (max-width: 767px) {
+    html, body { overflow-x: hidden; }
+
+    /* Sidebar overlay sizing */
+    #sidebar {
+        width: 80% !important;
+        max-width: 280px;
+        border-radius: 0 1rem 1rem 0;
+    }
+
+    /* Header compact */
+    header { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+    header h1, header h2, header span { word-break: break-word; }
+    header .w-9, header .w-10 { width: 2rem !important; height: 2rem !important; }
+
+    /* Main content compact */
+    main { padding: 0.75rem !important; }
+
+    /* Map heights on smaller screens */
+    #map, #staffMap, #visitorMap { height: 350px !important; min-height: 350px !important; }
+
+    /* Modals fit screen */
+    .fixed.inset-0 > .max-w-md,
+    .fixed.inset-0 > .max-w-lg,
+    .fixed.inset-0 > .max-w-xl,
+    .fixed.inset-0 > .max-w-2xl { max-width: 95% !important; width: 95% !important; }
+
+    /* Inputs readable on iOS */
+    input, select, textarea, button { font-size: 16px !important; }
+}

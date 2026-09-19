@@ -1,0 +1,245 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="770" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <style>
+      .root  { fill:#4472C4; stroke:#2F5597; stroke-width:2; }
+      .frame { fill:none; stroke:#333333; stroke-width:1.5; }
+      .sep   { stroke:#999999; stroke-width:1; }
+      .laneV { fill:#4472C4; }
+      .laneS { fill:#F5A93C; }
+      .laneA { fill:#2F5597; }
+      .laneT { fill:#548235; }
+      .vbox  { fill:#ffffff; stroke:#4472C4; stroke-width:1.4; }
+      .sbox  { fill:#ffffff; stroke:#C77F1F; stroke-width:1.4; }
+      .abox  { fill:#ffffff; stroke:#2F5597; stroke-width:1.4; }
+      .tbox  { fill:#ffffff; stroke:#548235; stroke-width:1.4; }
+      .flow  { stroke:#555555; stroke-width:1.5; fill:none; }
+      .inc   { stroke:#C77F1F; stroke-width:1.3; fill:none; stroke-dasharray:5,4; }
+      .rt    { fill:#ffffff; font-size:17px; font-weight:bold; text-anchor:middle; }
+      .sub   { fill:#666666; font-size:12px; text-anchor:middle; }
+      .lt    { fill:#ffffff; font-size:13px; font-weight:bold; text-anchor:middle; }
+      .bt    { fill:#1a1a1a; font-size:12.5px; text-anchor:middle; }
+      .rel   { fill:#8a5a10; font-size:10.5px; font-style:italic; }
+      .nt    { fill:#666666; font-size:10px; font-style:italic; }
+    </style>
+    <marker id="farr" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#555555"/>
+    </marker>
+    <marker id="iarr" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0 0 L7 3.5 L0 7" fill="none" stroke="#C77F1F" stroke-width="1.3"/>
+    </marker>
+  </defs>
+
+  <rect width="1720" height="770" fill="#ffffff"/>
+
+  <!-- Title -->
+  <rect class="root" x="585" y="14" width="550" height="46" rx="4"/>
+  <text class="rt" x="860" y="43">System Flow Diagram</text>
+  <text class="sub" x="860" y="74">Reservation, Navigation, and Workforce flows across Visitor, System, Administrator, and Staff</text>
+
+  <!-- ================= SWIMLANE FRAME ================= -->
+  <rect class="frame" x="140" y="80" width="1520" height="655"/>
+  <line class="sep" x1="140" y1="252" x2="1660" y2="252"/>
+  <line class="sep" x1="140" y1="432" x2="1660" y2="432"/>
+  <line class="sep" x1="140" y1="602" x2="1660" y2="602"/>
+
+  <!-- Lane label strips -->
+  <rect class="laneV" x="140" y="80"  width="42" height="172"/>
+  <rect class="laneS" x="140" y="252" width="42" height="180"/>
+  <rect class="laneA" x="140" y="432" width="42" height="170"/>
+  <rect class="laneT" x="140" y="602" width="42" height="133"/>
+  <text class="lt" transform="rotate(-90 161 166)" x="161" y="166">VISITOR</text>
+  <text class="lt" transform="rotate(-90 161 342)" x="161" y="342">SYSTEM</text>
+  <text class="lt" transform="rotate(-90 161 517)" x="161" y="517">ADMINISTRATOR</text>
+  <text class="lt" transform="rotate(-90 161 668)" x="161" y="668">STAFF</text>
+
+  <!-- ================= VISITOR LANE ================= -->
+  <rect class="vbox" x="250" y="102" width="160" height="56" rx="4"/>
+  <text class="bt" x="330" y="126">Login /</text>
+  <text class="bt" x="330" y="142">Authenticate</text>
+
+  <rect class="vbox" x="425" y="102" width="160" height="56" rx="4"/>
+  <text class="bt" x="505" y="126">View Interactive</text>
+  <text class="bt" x="505" y="142">Cemetery Map</text>
+
+  <rect class="vbox" x="600" y="102" width="160" height="56" rx="4"/>
+  <text class="bt" x="680" y="126">Search Grave /</text>
+  <text class="bt" x="680" y="142">Deceased</text>
+
+  <rect class="vbox" x="775" y="102" width="160" height="56" rx="4"/>
+  <text class="bt" x="855" y="126">View Plot Info &amp;</text>
+  <text class="bt" x="855" y="142">Availability</text>
+
+  <rect class="vbox" x="950" y="102" width="160" height="56" rx="4"/>
+  <text class="bt" x="1030" y="126">Submit Reservation</text>
+  <text class="bt" x="1030" y="142">Request</text>
+
+  <rect class="vbox" x="1125" y="102" width="160" height="56" rx="4"/>
+  <text class="bt" x="1205" y="126">Make Payment &amp;</text>
+  <text class="bt" x="1205" y="142">View History</text>
+
+  <rect class="vbox" x="600" y="187" width="160" height="56" rx="4"/>
+  <text class="bt" x="680" y="211">Navigate to Grave</text>
+  <text class="bt" x="680" y="227">(Voice Guidance)</text>
+
+  <rect class="vbox" x="1475" y="187" width="160" height="56" rx="4"/>
+  <text class="bt" x="1555" y="211">Submit Maintenance</text>
+  <text class="bt" x="1555" y="227">Request</text>
+
+  <rect class="vbox" x="1300" y="187" width="160" height="56" rx="4"/>
+  <text class="bt" x="1380" y="211">View Announcements</text>
+  <text class="bt" x="1380" y="227">&amp; Notifications</text>
+
+  <!-- ================= SYSTEM LANE ================= -->
+  <rect class="sbox" x="600" y="292" width="160" height="56" rx="4"/>
+  <text class="bt" x="680" y="316">Compute Shortest</text>
+  <text class="bt" x="680" y="332">Route</text>
+
+  <rect class="sbox" x="775" y="292" width="160" height="56" rx="4"/>
+  <text class="bt" x="855" y="316">Track Visitor</text>
+  <text class="bt" x="855" y="332">GPS Location</text>
+
+  <rect class="sbox" x="950" y="292" width="160" height="56" rx="4"/>
+  <text class="bt" x="1030" y="316">Send Reservation</text>
+  <text class="bt" x="1030" y="332">Notification</text>
+
+  <rect class="sbox" x="1300" y="292" width="160" height="56" rx="4"/>
+  <text class="bt" x="1380" y="316">Send Reservation</text>
+  <text class="bt" x="1380" y="332">Status Notification</text>
+
+  <rect class="sbox" x="1300" y="369" width="160" height="56" rx="4"/>
+  <text class="bt" x="1380" y="393">Send Burial Schedule</text>
+  <text class="bt" x="1380" y="409">Reminder</text>
+
+  <rect class="sbox" x="1475" y="369" width="160" height="56" rx="4"/>
+  <text class="bt" x="1555" y="393">Notify Assigned</text>
+  <text class="bt" x="1555" y="409">Staff</text>
+
+  <!-- ================= ADMINISTRATOR LANE ================= -->
+  <rect class="abox" x="250" y="452" width="160" height="56" rx="4"/>
+  <text class="bt" x="330" y="476">Login /</text>
+  <text class="bt" x="330" y="492">Authenticate</text>
+
+  <rect class="abox" x="950" y="452" width="160" height="56" rx="4"/>
+  <text class="bt" x="1030" y="476">Approve / Decline</text>
+  <text class="bt" x="1030" y="492">Reservations</text>
+
+  <rect class="abox" x="1125" y="452" width="160" height="56" rx="4"/>
+  <text class="bt" x="1205" y="476">Manage</text>
+  <text class="bt" x="1205" y="492">Payments</text>
+
+  <rect class="abox" x="1300" y="452" width="160" height="56" rx="4"/>
+  <text class="bt" x="1380" y="476">Assign Plot &amp;</text>
+  <text class="bt" x="1380" y="492">Record Burial</text>
+
+  <rect class="abox" x="1475" y="452" width="160" height="56" rx="4"/>
+  <text class="bt" x="1555" y="476">Manage Burial</text>
+  <text class="bt" x="1555" y="492">Schedule</text>
+
+  <rect class="abox" x="1300" y="537" width="160" height="56" rx="4"/>
+  <text class="bt" x="1380" y="561">Assign Workforce</text>
+  <text class="bt" x="1380" y="577">to Tasks</text>
+
+  <rect class="abox" x="1125" y="537" width="160" height="56" rx="4"/>
+  <text class="bt" x="1205" y="561">Monitor Task</text>
+  <text class="bt" x="1205" y="577">Progress</text>
+
+  <rect class="abox" x="950" y="537" width="160" height="56" rx="4"/>
+  <text class="bt" x="1030" y="561">Review Maintenance</text>
+  <text class="bt" x="1030" y="577">Reports</text>
+
+  <rect class="abox" x="775" y="537" width="160" height="56" rx="4"/>
+  <text class="bt" x="855" y="561">Manage Map</text>
+  <text class="bt" x="855" y="577">Layout</text>
+
+  <rect class="abox" x="600" y="537" width="160" height="56" rx="4"/>
+  <text class="bt" x="680" y="561">Post</text>
+  <text class="bt" x="680" y="577">Announcements</text>
+
+  <rect class="abox" x="425" y="537" width="160" height="56" rx="4"/>
+  <text class="bt" x="505" y="561">Manage User</text>
+  <text class="bt" x="505" y="577">Accounts</text>
+
+  <!-- ================= STAFF LANE ================= -->
+  <rect class="tbox" x="250" y="647" width="160" height="56" rx="4"/>
+  <text class="bt" x="330" y="671">Login /</text>
+  <text class="bt" x="330" y="687">Authenticate</text>
+
+  <rect class="tbox" x="1475" y="647" width="160" height="56" rx="4"/>
+  <text class="bt" x="1555" y="671">View Assigned</text>
+  <text class="bt" x="1555" y="687">Tasks</text>
+
+  <rect class="tbox" x="1300" y="647" width="160" height="56" rx="4"/>
+  <text class="bt" x="1380" y="671">Update Task</text>
+  <text class="bt" x="1380" y="687">Status</text>
+
+  <rect class="tbox" x="1125" y="647" width="160" height="56" rx="4"/>
+  <text class="bt" x="1205" y="671">Submit Maintenance</text>
+  <text class="bt" x="1205" y="687">Report</text>
+
+  <!-- ================= FLOW ARROWS ================= -->
+  <!-- Visitor main chain -->
+  <path class="flow" d="M410 130 L425 130 M585 130 L600 130 M765 130 L775 130 M935 130 L950 130" marker-end="url(#farr)"/>
+
+  <!-- Search <<extend>> Navigate -->
+  <path class="inc" d="M680 187 L680 160" marker-end="url(#iarr)"/>
+  <text class="rel" x="688" y="176">&#171;extend&#187;</text>
+
+  <!-- Navigate <<include>> Route / GPS -->
+  <path class="inc" d="M660 243 L660 290" marker-end="url(#iarr)"/>
+  <path class="inc" d="M730 236 L790 292" marker-end="url(#iarr)"/>
+  <text class="rel" x="612" y="272">&#171;include&#187;</text>
+  <text class="rel" x="742" y="262">&#171;include&#187;</text>
+
+  <!-- Submit Reservation <<include>> Send Reservation Notification -->
+  <path class="inc" d="M1030 158 L1030 290" marker-end="url(#iarr)"/>
+  <text class="rel" x="1038" y="230">&#171;include&#187;</text>
+
+  <!-- Notification delivered to admin -->
+  <path class="flow" d="M1030 348 L1030 450" marker-end="url(#farr)"/>
+  <text class="nt" x="1038" y="405">notifies admin</text>
+
+  <!-- Approve/Decline <<include>> Status Notification -->
+  <path class="inc" d="M1055 456 L1345 336" marker-end="url(#iarr)"/>
+  <text class="rel" x="1180" y="390">&#171;include&#187;</text>
+
+  <!-- Status notification delivered to visitor -->
+  <path class="flow" d="M1380 292 L1380 245" marker-end="url(#farr)"/>
+  <text class="nt" x="1388" y="270">notifies visitor</text>
+
+  <!-- Admin chain: approve -> payments -> assign plot -> schedule -->
+  <path class="flow" d="M1110 480 L1125 480 M1285 480 L1300 480 M1460 480 L1475 480" marker-end="url(#farr)"/>
+
+  <!-- Payment up to visitor -->
+  <path class="flow" d="M1205 452 L1205 160" marker-end="url(#farr)"/>
+
+  <!-- Schedule <<include>> Detect Conflicts / Send Reminder -->
+  <path class="inc" d="M1540 452 L1540 350" marker-end="url(#iarr)"/>
+  <text class="rel" x="1548" y="402">&#171;include&#187;</text>
+  <path class="inc" d="M1520 462 L1422 408" marker-end="url(#iarr)"/>
+  <text class="rel" x="1472" y="430">&#171;include&#187;</text>
+
+  <!-- Schedule -> Assign Workforce -->
+  <path class="flow" d="M1520 508 L1418 536" marker-end="url(#farr)"/>
+
+  <!-- Assign Workforce <<include>> Notify Assigned Staff -->
+  <path class="inc" d="M1460 545 L1475 406" marker-end="url(#iarr)"/>
+  <text class="rel" x="1418" y="530">&#171;include&#187;</text>
+
+  <!-- Notify Staff -> View Assigned Tasks (staff lane) -->
+  <path class="flow" d="M1490 421 L1477 666" marker-end="url(#farr)"/>
+
+  <!-- Workforce chain -->
+  <path class="flow" d="M1300 565 L1287 565 M1125 565 L1112 565" marker-end="url(#farr)"/>
+
+  <!-- Staff task chain -->
+  <path class="flow" d="M1475 675 L1462 675 M1300 675 L1287 675" marker-end="url(#farr)"/>
+
+  <!-- Update Task Status -> Monitor Task Progress -->
+  <path class="flow" d="M1330 647 L1247 594" marker-end="url(#farr)"/>
+
+  <!-- Submit Maintenance Report -> Review Maintenance Reports -->
+  <path class="flow" d="M1170 647 L1087 592" marker-end="url(#farr)"/>
+
+  <!-- Visitor maintenance request routed to admin review -->
+  <path class="flow" d="M1600 243 H1652 V720 H1090 V594" marker-end="url(#farr)"/>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "name": "Matutum PlotNav",
+  "short_name": "PlotNav",
+  "start_url": "landing.php",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "scope": ".",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

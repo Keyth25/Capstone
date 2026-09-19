@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Matutum PlotNav</string>
+    <string name="title_activity_main">Matutum PlotNav</string>
+    <string name="package_name">com.matutum.plotnav</string>
+    <string name="custom_url_scheme">com.matutum.plotnav</string>
+</resources>

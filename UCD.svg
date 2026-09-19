@@ -1,0 +1,265 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1290" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <style>
+      .bound { fill:#fdfdfd; stroke:#333333; stroke-width:1.5; }
+      .uc    { fill:#ffffff; stroke:#333333; stroke-width:1.2; }
+      .assoc { stroke:#444444; stroke-width:1.2; fill:none; }
+      .flow  { stroke:#4472C4; stroke-width:1.4; fill:none; }
+      .inc   { stroke:#C77F1F; stroke-width:1.3; fill:none; stroke-dasharray:5,4; }
+      .fig   { stroke:#1a1a1a; stroke-width:1.8; fill:none; }
+      .ahead { fill:#ffffff; stroke:#1a1a1a; stroke-width:1.8; }
+      .sys   { fill:#1a1a1a; font-size:15px; font-weight:bold; }
+      .ttl   { fill:#1a1a1a; font-size:17px; font-weight:bold; }
+      .ut    { fill:#1a1a1a; font-size:12.5px; text-anchor:middle; }
+      .at    { fill:#1a1a1a; font-size:13.5px; font-weight:bold; text-anchor:middle; }
+      .rel   { fill:#8a5a10; font-size:10.5px; font-style:italic; }
+      .nt    { fill:#2F5597; font-size:10.5px; font-style:italic; }
+    </style>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0 0 L7 3.5 L0 7" fill="none" stroke="#C77F1F" stroke-width="1.3"/>
+    </marker>
+    <marker id="arr2" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0 0 L7 3.5 L0 7" fill="none" stroke="#4472C4" stroke-width="1.3"/>
+    </marker>
+  </defs>
+
+  <rect width="1400" height="1290" fill="#ffffff"/>
+  <text class="ttl" x="150" y="42">Use Case Diagram</text>
+
+  <!-- System boundary -->
+  <rect class="bound" x="150" y="60" width="1000" height="1185"/>
+  <text class="sys" x="170" y="90">Cemetery Mapping and Management System</text>
+
+  <!-- ============ VISITOR COLUMN (cx=330) ============ -->
+  <ellipse class="uc" cx="330" cy="130" rx="105" ry="26"/>
+  <text class="ut" x="330" y="126">Login /</text>
+  <text class="ut" x="330" y="141">Authenticate</text>
+
+  <ellipse class="uc" cx="330" cy="206" rx="105" ry="26"/>
+  <text class="ut" x="330" y="202">View Interactive</text>
+  <text class="ut" x="330" y="217">Cemetery Map</text>
+
+  <ellipse class="uc" cx="330" cy="282" rx="105" ry="26"/>
+  <text class="ut" x="330" y="278">Search Grave /</text>
+  <text class="ut" x="330" y="293">Deceased</text>
+
+  <ellipse class="uc" cx="330" cy="358" rx="105" ry="26"/>
+  <text class="ut" x="330" y="354">Navigate to Grave</text>
+  <text class="ut" x="330" y="369">(Voice Guidance)</text>
+
+  <ellipse class="uc" cx="330" cy="434" rx="105" ry="26"/>
+  <text class="ut" x="330" y="430">View Plot</text>
+  <text class="ut" x="330" y="445">Information</text>
+
+  <ellipse class="uc" cx="330" cy="510" rx="105" ry="26"/>
+  <text class="ut" x="330" y="506">View Plot</text>
+  <text class="ut" x="330" y="521">Availability</text>
+
+  <ellipse class="uc" cx="330" cy="586" rx="105" ry="26"/>
+  <text class="ut" x="330" y="582">Submit Reservation</text>
+  <text class="ut" x="330" y="597">Request</text>
+
+  <ellipse class="uc" cx="330" cy="662" rx="105" ry="26"/>
+  <text class="ut" x="330" y="658">View &amp; Manage</text>
+  <text class="ut" x="330" y="673">Notifications</text>
+
+  <ellipse class="uc" cx="330" cy="738" rx="105" ry="26"/>
+  <text class="ut" x="330" y="734">Make Payment &amp;</text>
+  <text class="ut" x="330" y="749">View History</text>
+
+  <ellipse class="uc" cx="330" cy="814" rx="105" ry="26"/>
+  <text class="ut" x="330" y="810">Submit Maintenance</text>
+  <text class="ut" x="330" y="825">Request</text>
+
+  <ellipse class="uc" cx="330" cy="890" rx="105" ry="26"/>
+  <text class="ut" x="330" y="886">View</text>
+  <text class="ut" x="330" y="901">Announcements</text>
+
+  <!-- ============ MIDDLE COLUMN (cx=640) : SYSTEM CONNECTORS ============ -->
+  <ellipse class="uc" cx="640" cy="240" rx="105" ry="26"/>
+  <text class="ut" x="640" y="236">Compute Shortest</text>
+  <text class="ut" x="640" y="251">Route</text>
+
+  <ellipse class="uc" cx="640" cy="320" rx="105" ry="26"/>
+  <text class="ut" x="640" y="316">Track Visitor</text>
+  <text class="ut" x="640" y="331">GPS Location</text>
+
+  <ellipse class="uc" cx="640" cy="400" rx="105" ry="26"/>
+  <text class="ut" x="640" y="396">Send Reservation</text>
+  <text class="ut" x="640" y="411">Notification</text>
+
+  <ellipse class="uc" cx="640" cy="480" rx="105" ry="26"/>
+  <text class="ut" x="640" y="476">Send Reservation</text>
+  <text class="ut" x="640" y="491">Status Notification</text>
+
+  <ellipse class="uc" cx="640" cy="560" rx="105" ry="26"/>
+  <text class="ut" x="640" y="556">Record Payment</text>
+  <text class="ut" x="640" y="571">Transaction</text>
+
+  <ellipse class="uc" cx="640" cy="640" rx="105" ry="26"/>
+  <text class="ut" x="640" y="636">Detect Schedule</text>
+  <text class="ut" x="640" y="651">Conflicts</text>
+
+  <ellipse class="uc" cx="640" cy="720" rx="105" ry="26"/>
+  <text class="ut" x="640" y="716">Send Burial Schedule</text>
+  <text class="ut" x="640" y="731">Reminder</text>
+
+  <ellipse class="uc" cx="640" cy="800" rx="105" ry="26"/>
+  <text class="ut" x="640" y="796">Notify Assigned</text>
+  <text class="ut" x="640" y="811">Staff</text>
+
+  <ellipse class="uc" cx="640" cy="880" rx="105" ry="26"/>
+  <text class="ut" x="640" y="876">Log Maintenance</text>
+  <text class="ut" x="640" y="891">Request</text>
+
+  <!-- ============ RIGHT COLUMN (cx=960) : ADMIN ============ -->
+  <ellipse class="uc" cx="960" cy="130" rx="105" ry="26"/>
+  <text class="ut" x="960" y="126">Login /</text>
+  <text class="ut" x="960" y="141">Authenticate</text>
+
+  <ellipse class="uc" cx="960" cy="206" rx="105" ry="26"/>
+  <text class="ut" x="960" y="202">Manage Map</text>
+  <text class="ut" x="960" y="217">Layout</text>
+
+  <ellipse class="uc" cx="960" cy="282" rx="105" ry="26"/>
+  <text class="ut" x="960" y="278">Approve / Decline</text>
+  <text class="ut" x="960" y="293">Reservations</text>
+
+  <ellipse class="uc" cx="960" cy="358" rx="105" ry="26"/>
+  <text class="ut" x="960" y="354">Assign Plot &amp;</text>
+  <text class="ut" x="960" y="369">Record Burial</text>
+
+  <ellipse class="uc" cx="960" cy="434" rx="105" ry="26"/>
+  <text class="ut" x="960" y="430">Manage</text>
+  <text class="ut" x="960" y="445">Payments</text>
+
+  <ellipse class="uc" cx="960" cy="510" rx="105" ry="26"/>
+  <text class="ut" x="960" y="506">Manage Burial</text>
+  <text class="ut" x="960" y="521">Schedule</text>
+
+  <ellipse class="uc" cx="960" cy="586" rx="105" ry="26"/>
+  <text class="ut" x="960" y="582">Assign Workforce</text>
+  <text class="ut" x="960" y="597">to Tasks</text>
+
+  <ellipse class="uc" cx="960" cy="662" rx="105" ry="26"/>
+  <text class="ut" x="960" y="658">Post</text>
+  <text class="ut" x="960" y="673">Announcements</text>
+
+  <ellipse class="uc" cx="960" cy="738" rx="105" ry="26"/>
+  <text class="ut" x="960" y="734">Manage User</text>
+  <text class="ut" x="960" y="749">Accounts</text>
+
+  <ellipse class="uc" cx="960" cy="814" rx="105" ry="26"/>
+  <text class="ut" x="960" y="810">Monitor Task</text>
+  <text class="ut" x="960" y="825">Progress</text>
+
+  <ellipse class="uc" cx="960" cy="890" rx="105" ry="26"/>
+  <text class="ut" x="960" y="886">Review Maintenance</text>
+  <text class="ut" x="960" y="901">Reports</text>
+
+  <!-- ============ RIGHT COLUMN (cx=960) : STAFF ============ -->
+  <ellipse class="uc" cx="960" cy="950" rx="105" ry="26"/>
+  <text class="ut" x="960" y="946">Login /</text>
+  <text class="ut" x="960" y="961">Authenticate</text>
+
+  <ellipse class="uc" cx="960" cy="1006" rx="105" ry="26"/>
+  <text class="ut" x="960" y="1002">View Assigned</text>
+  <text class="ut" x="960" y="1017">Tasks</text>
+
+  <ellipse class="uc" cx="960" cy="1062" rx="105" ry="26"/>
+  <text class="ut" x="960" y="1058">Update Task</text>
+  <text class="ut" x="960" y="1073">Status</text>
+
+  <ellipse class="uc" cx="960" cy="1118" rx="105" ry="26"/>
+  <text class="ut" x="960" y="1114">Submit Maintenance</text>
+  <text class="ut" x="960" y="1129">Report</text>
+
+  <ellipse class="uc" cx="960" cy="1174" rx="105" ry="26"/>
+  <text class="ut" x="960" y="1170">View Announcements</text>
+  <text class="ut" x="960" y="1185">&amp; Notifications</text>
+
+  <!-- ============ ASSOCIATIONS ============ -->
+  <!-- Visitor fan -->
+  <path class="assoc" d="M110 505 L225 130 M110 505 L225 206 M110 505 L225 282 M110 505 L225 358 M110 505 L225 434 M110 505 L225 510 M110 505 L225 586 M110 505 L225 662 M110 505 L225 738 M110 505 L225 814 M110 505 L225 890"/>
+
+  <!-- Administrator fan -->
+  <path class="assoc" d="M1240 503 L1065 130 M1240 503 L1065 206 M1240 503 L1065 282 M1240 503 L1065 358 M1240 503 L1065 434 M1240 503 L1065 510 M1240 503 L1065 586 M1240 503 L1065 662 M1240 503 L1065 738 M1240 503 L1065 814 M1240 503 L1065 890"/>
+
+  <!-- Cemetery Staff fan -->
+  <path class="assoc" d="M1240 1045 L1065 950 M1240 1045 L1065 1006 M1240 1045 L1065 1062 M1240 1045 L1065 1118 M1240 1045 L1065 1174"/>
+
+  <!-- ============ LEFT-ZONE CONNECTORS (Visitor <-> System) ============ -->
+  <!-- Navigate <<include>> Compute Route / Track GPS -->
+  <path class="inc" d="M433 352 L535 236" marker-end="url(#arr)"/>
+  <path class="inc" d="M433 366 L535 324" marker-end="url(#arr)"/>
+  <text class="rel" x="440" y="292">&#171;include&#187;</text>
+  <text class="rel" x="440" y="350">&#171;include&#187;</text>
+
+  <!-- Submit Reservation <<include>> Send Reservation Notification -->
+  <path class="inc" d="M435 582 L535 398" marker-end="url(#arr)"/>
+  <text class="rel" x="442" y="494">&#171;include&#187;</text>
+
+  <!-- Status Notification -> notifies visitor -->
+  <path class="flow" d="M535 478 L435 660" marker-end="url(#arr2)"/>
+  <text class="nt" x="445" y="566">notifies</text>
+
+  <!-- Make Payment <<include>> Record Payment Transaction -->
+  <path class="inc" d="M435 734 L535 558" marker-end="url(#arr)"/>
+  <text class="rel" x="442" y="648">&#171;include&#187;</text>
+
+  <!-- Submit Maintenance Request <<include>> Log Maintenance Request -->
+  <path class="inc" d="M435 810 L535 878" marker-end="url(#arr)"/>
+  <text class="rel" x="442" y="848">&#171;include&#187;</text>
+
+  <!-- ============ RIGHT-ZONE CONNECTORS (System <-> Admin/Staff) ============ -->
+  <!-- Reservation Notification -> notifies admin (Approve/Decline) -->
+  <path class="flow" d="M745 398 L855 284" marker-end="url(#arr2)"/>
+  <text class="nt" x="760" y="336">notifies</text>
+
+  <!-- Approve/Decline <<include>> Send Status Notification -->
+  <path class="inc" d="M853 290 L745 478" marker-end="url(#arr)"/>
+  <text class="rel" x="762" y="382">&#171;include&#187;</text>
+
+  <!-- Record Payment Transaction -> recorded in Manage Payments -->
+  <path class="flow" d="M745 558 L855 436" marker-end="url(#arr2)"/>
+  <text class="nt" x="762" y="498">recorded in</text>
+
+  <!-- Manage Burial Schedule <<include>> Detect Conflicts / Send Reminder -->
+  <path class="inc" d="M853 506 L745 638" marker-end="url(#arr)"/>
+  <path class="inc" d="M853 518 L745 718" marker-end="url(#arr)"/>
+  <text class="rel" x="762" y="576">&#171;include&#187;</text>
+  <text class="rel" x="762" y="622">&#171;include&#187;</text>
+
+  <!-- Assign Workforce <<include>> Notify Assigned Staff -->
+  <path class="inc" d="M853 584 L745 798" marker-end="url(#arr)"/>
+  <text class="rel" x="762" y="696">&#171;include&#187;</text>
+
+  <!-- Notify Assigned Staff -> notifies staff (View Assigned Tasks) -->
+  <path class="flow" d="M745 802 L855 1006" marker-end="url(#arr2)"/>
+  <text class="nt" x="762" y="905">notifies</text>
+
+  <!-- ============ INTERNAL (same column) ============ -->
+  <!-- Submit Reservation <<include>> View Plot Availability -->
+  <path class="inc" d="M330 560 L330 536" marker-end="url(#arr)"/>
+  <text class="rel" x="337" y="552">&#171;include&#187;</text>
+
+  <!-- Navigate <<extend>> Search Grave / Deceased -->
+  <path class="inc" d="M330 332 L330 308" marker-end="url(#arr)"/>
+  <text class="rel" x="337" y="324">&#171;extend&#187;</text>
+
+  <!-- ============ ACTORS ============ -->
+  <!-- Visitor (left) -->
+  <circle class="ahead" cx="95" cy="475" r="11"/>
+  <path class="fig" d="M95 486 V530 M82 498 H108 M95 530 L82 560 M95 530 L108 560"/>
+  <text class="at" x="95" y="583">Visitor</text>
+
+  <!-- Administrator (right top) -->
+  <circle class="ahead" cx="1255" cy="475" r="11"/>
+  <path class="fig" d="M1255 486 V530 M1242 498 H1268 M1255 530 L1242 560 M1255 530 L1268 560"/>
+  <text class="at" x="1255" y="583">Administrator</text>
+
+  <!-- Cemetery Staff (right bottom) -->
+  <circle class="ahead" cx="1255" cy="1020" r="11"/>
+  <path class="fig" d="M1255 1031 V1075 M1242 1043 H1268 M1255 1075 L1242 1105 M1255 1075 L1268 1105"/>
+  <text class="at" x="1255" y="1128">Cemetery Staff</text>
+</svg>

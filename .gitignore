@@ -1,0 +1,17 @@
+# Secrets / environment
+config.php
+
+# Dependencies
+node_modules/
+
+# User-uploaded files
+uploads/
+
+# Debug / temp artifacts
+nul
+_admin_out.html
+_check_maun.php
+
+# OS junk
+Thumbs.db
+Desktop.ini

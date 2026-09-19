@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1490" height="620" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <style>
+      .root { fill:#4472C4; stroke:#2F5597; stroke-width:2; }
+      .hdr  { fill:#F5A93C; stroke:#C77F1F; stroke-width:1.5; }
+      .box  { fill:#B4B4B4; stroke:#8A8A8A; stroke-width:1.2; }
+      .rt   { fill:#10243E; font-size:17px; font-weight:bold; text-anchor:middle; }
+      .ht   { fill:#1a1a1a; font-size:15px; text-anchor:middle; }
+      .gt   { fill:#1a1a1a; font-size:13.5px; text-anchor:middle; }
+      .ln   { stroke:#7B9BD1; stroke-width:2; fill:none; }
+    </style>
+  </defs>
+
+  <rect width="1490" height="620" fill="#ffffff"/>
+
+  <!-- Root -->
+  <rect class="root" x="575" y="30" width="340" height="90" rx="4"/>
+  <text class="rt" x="745" y="62">Cemetery Management</text>
+  <text class="rt" x="745" y="84">System with Voice Navigation</text>
+  <text class="rt" x="745" y="106">and Interactive Mapping</text>
+
+  <!-- Top connectors: root -> horizontal spine -> module headers -->
+  <path class="ln" d="M745 120 V150 M165 150 H1325 M165 150 V170 M455 150 V170 M745 150 V170 M1035 150 V170 M1325 150 V170"/>
+
+  <!-- ================= MODULE HEADERS ================= -->
+  <rect class="hdr" x="40"   y="170" width="250" height="100" rx="4"/>
+  <rect class="hdr" x="330"  y="170" width="250" height="100" rx="4"/>
+  <rect class="hdr" x="620"  y="170" width="250" height="100" rx="4"/>
+  <rect class="hdr" x="910"  y="170" width="250" height="100" rx="4"/>
+  <rect class="hdr" x="1200" y="170" width="250" height="100" rx="4"/>
+
+  <text class="ht" x="165" y="200">Interactive</text>
+  <text class="ht" x="165" y="220">Cemetery</text>
+  <text class="ht" x="165" y="240">Mapping</text>
+
+  <text class="ht" x="455" y="200">Real-time</text>
+  <text class="ht" x="455" y="220">Voice</text>
+  <text class="ht" x="455" y="240">Navigation</text>
+
+  <text class="ht" x="745" y="200">Plot Availability</text>
+  <text class="ht" x="745" y="220">and Reservation</text>
+  <text class="ht" x="745" y="240">Management</text>
+
+  <text class="ht" x="1035" y="192">Burial</text>
+  <text class="ht" x="1035" y="212">Scheduling and</text>
+  <text class="ht" x="1035" y="232">Workforce</text>
+  <text class="ht" x="1035" y="252">Management</text>
+
+  <text class="ht" x="1325" y="192">Notification</text>
+  <text class="ht" x="1325" y="212">And</text>
+  <text class="ht" x="1325" y="232">Announcement</text>
+  <text class="ht" x="1325" y="252">System</text>
+
+  <!-- ================= COLUMN 1: spine x=75, boxes x=95 w=180 ================= -->
+  <path class="ln" d="M75 270 V474 M75 318 H95 M75 396 H95 M75 484 H95 M75 474 V484"/>
+  <rect class="box" x="95" y="290" width="180" height="56" rx="3"/>
+  <text class="gt" x="185" y="312">Grave</text>
+  <text class="gt" x="185" y="332">Location</text>
+
+  <rect class="box" x="95" y="368" width="180" height="56" rx="3"/>
+  <text class="gt" x="185" y="390">Plot</text>
+  <text class="gt" x="185" y="410">Information</text>
+
+  <rect class="box" x="95" y="446" width="180" height="76" rx="3"/>
+  <text class="gt" x="185" y="468">Cemetery</text>
+  <text class="gt" x="185" y="488">Section</text>
+  <text class="gt" x="185" y="508">Navigation</text>
+
+  <!-- ================= COLUMN 2: spine x=365, boxes x=385 w=180 ================= -->
+  <path class="ln" d="M365 270 V514 M365 318 H385 M365 406 H385 M365 514 H385"/>
+  <rect class="box" x="385" y="290" width="180" height="56" rx="3"/>
+  <text class="gt" x="475" y="312">Grave</text>
+  <text class="gt" x="475" y="332">Selection</text>
+
+  <rect class="box" x="385" y="368" width="180" height="76" rx="3"/>
+  <text class="gt" x="475" y="390">Find</text>
+  <text class="gt" x="475" y="410">Shortest</text>
+  <text class="gt" x="475" y="430">Route</text>
+
+  <rect class="box" x="385" y="466" width="180" height="96" rx="3"/>
+  <text class="gt" x="475" y="488">Turn-by-</text>
+  <text class="gt" x="475" y="508">Turn</text>
+  <text class="gt" x="475" y="528">Voice</text>
+  <text class="gt" x="475" y="548">Directions</text>
+
+  <!-- ================= COLUMN 3: spine x=655, boxes x=675 w=180 ================= -->
+  <path class="ln" d="M655 270 V484 M655 318 H675 M655 396 H675 M655 484 H675"/>
+  <rect class="box" x="675" y="290" width="180" height="56" rx="3"/>
+  <text class="gt" x="765" y="312">Plot</text>
+  <text class="gt" x="765" y="332">Availability</text>
+
+  <rect class="box" x="675" y="368" width="180" height="56" rx="3"/>
+  <text class="gt" x="765" y="390">Plot</text>
+  <text class="gt" x="765" y="410">Reservation</text>
+
+  <rect class="box" x="675" y="446" width="180" height="76" rx="3"/>
+  <text class="gt" x="765" y="468">Burial</text>
+  <text class="gt" x="765" y="488">Space</text>
+  <text class="gt" x="765" y="508">Assignment</text>
+
+  <!-- ================= COLUMN 4: spine x=945, boxes x=965 w=180 ================= -->
+  <path class="ln" d="M945 270 V474 M945 318 H965 M945 396 H965 M945 474 H965"/>
+  <rect class="box" x="965" y="290" width="180" height="56" rx="3"/>
+  <text class="gt" x="1055" y="312">Burial</text>
+  <text class="gt" x="1055" y="332">Schedule</text>
+
+  <rect class="box" x="965" y="368" width="180" height="56" rx="3"/>
+  <text class="gt" x="1055" y="390">Workforce</text>
+  <text class="gt" x="1055" y="410">Assignment</text>
+
+  <rect class="box" x="965" y="446" width="180" height="56" rx="3"/>
+  <text class="gt" x="1055" y="468">Personnel</text>
+  <text class="gt" x="1055" y="488">Monitoring</text>
+
+  <!-- ================= COLUMN 5: spine x=1235, boxes x=1255 w=180 ================= -->
+  <path class="ln" d="M1235 270 V494 M1235 328 H1255 M1235 416 H1255 M1235 494 H1255"/>
+  <rect class="box" x="1255" y="290" width="180" height="76" rx="3"/>
+  <text class="gt" x="1345" y="312">Burial</text>
+  <text class="gt" x="1345" y="332">Schedule</text>
+  <text class="gt" x="1345" y="352">Notifications</text>
+
+  <rect class="box" x="1255" y="388" width="180" height="56" rx="3"/>
+  <text class="gt" x="1345" y="410">Reservation</text>
+  <text class="gt" x="1345" y="430">Notifications</text>
+
+  <rect class="box" x="1255" y="466" width="180" height="56" rx="3"/>
+  <text class="gt" x="1345" y="488">Cemetery</text>
+  <text class="gt" x="1345" y="508">Announcements</text>
+</svg>
