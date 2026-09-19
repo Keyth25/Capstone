@@ -3,7 +3,7 @@
   "appName": "Matutum PlotNav",
   "webDir": "www",
   "server": {
-    "url": "http://192.168.137.1/Capstone/landing.php",
+    "url": "https://matutum-platnav.onrender.com/landing.php",
     "cleartext": true
   }
 }

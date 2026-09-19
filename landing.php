@@ -14,7 +14,7 @@ session_start();
 $isLoggedIn = !empty($_SESSION['user_id']) && !empty($_SESSION['role']);
 
 // Mobile app download details (shown in the Download section below).
-$apkPath = __DIR__ . '/android/app/build/outputs/apk/debug/app-debug.apk';
+$apkPath = __DIR__ . '/apk/MatutumPlotNav.apk';
 $apkAvailable = is_file($apkPath);
 $apkSizeMb = $apkAvailable ? round(filesize($apkPath) / 1048576, 1) : null;
 
