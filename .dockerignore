@@ -1,0 +1,10 @@
+.git
+node_modules
+android
+config.php
+uploads/*
+*.md
+*.svg
+_admin_out.html
+_check_maun.php
+nul

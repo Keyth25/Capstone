@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Capacitor wrapper for Matutum PlotNav",
   "scripts": {
+    "start": "node server.js",
     "install-capacitor": "npm install",
     "add-android": "npx cap add android",
     "build-apk": "npx cap build android"
