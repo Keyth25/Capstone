@@ -1381,10 +1381,23 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         // Browser Back also returns to the selection screen instead of leaving
         // the page, since the wizard is a pushed history state.
         window.addEventListener('popstate', () => {
-            wizardHistoryPushed = false;
+            wizardHistoryPushed = !!(history.state && history.state.resWizard);
             if (!document.getElementById('wizard-container').classList.contains('hidden')) {
                 goToLanding();
+            } else if (wizardHistoryPushed) {
+                // Stale wizard entry left under the selection screen by a
+                // reload/restore — skip it so Back doesn't appear dead.
+                history.back();
             }
+        });
+
+        // Reloads and app restarts always begin on the selection screen. The
+        // pushed history state survives a reload even though the DOM resets,
+        // so re-sync the flag and re-show the landing in case a restored
+        // snapshot kept the wizard visible.
+        window.addEventListener('pageshow', () => {
+            goToLanding();
+            wizardHistoryPushed = !!(history.state && history.state.resWizard);
         });
 
         function selectPurpose(type) {
