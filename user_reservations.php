@@ -34,7 +34,7 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>My Reservations - Matutum PlotNav</title>
     <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -77,6 +77,7 @@ try {
         .dark .dashboard-scroll::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.4); }
     </style>
     <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex flex-col overflow-hidden antialiased transition-colors duration-200">
 

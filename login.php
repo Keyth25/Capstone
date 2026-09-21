@@ -207,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="en" class="dark antialiased">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CemeteryNav — Portal Access</title>
     
     <!-- Google Fonts & Font Awesome -->
@@ -343,6 +343,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#7c3aed">
     <script src="pwa.js" defer></script>
+    <script src="mobile.js" defer></script>
 </head>
 <body class="<?= $embed ? 'bg-transparent' : 'mesh-bg' ?> min-h-screen flex items-center justify-center p-4 sm:p-6 relative text-slate-800 dark:text-slate-100 font-sans overflow-x-hidden selection:bg-brand-600 selection:text-white transition-colors duration-300">
 

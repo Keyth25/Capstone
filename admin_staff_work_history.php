@@ -192,7 +192,7 @@ function staffInitials($name) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Staff Work History - Admin</title>
     <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -229,6 +229,8 @@ function staffInitials($name) {
         .staff-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
         .staff-card:hover { transform: translateY(-2px); }
     </style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-[#eef0f8] dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex font-sans overflow-hidden">
 
@@ -241,7 +243,7 @@ function staffInitials($name) {
             <!-- PAGE HEADER -->
             <div class="flex items-center justify-between flex-wrap gap-3">
                 <div class="flex items-center gap-3.5">
-                    <button onclick="toggleSidebar()" class="md:hidden p-2.5 rounded-xl mr-card mr-muted shadow-sm">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2.5 rounded-xl mr-card mr-muted shadow-sm">
                         <i class="fa-solid fa-bars text-sm"></i>
                     </button>
                     <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-600/30 shrink-0">

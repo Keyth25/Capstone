@@ -205,7 +205,7 @@ try {
     </script>
     <?php endif; ?>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Staff Portal - Maintenance Task Board</title>
     
     <!-- Tailwind CSS -->
@@ -270,6 +270,7 @@ try {
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0891b2">
     <script src="pwa.js" defer></script>
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-950 min-h-screen text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-slate-950">
 
@@ -321,7 +322,7 @@ try {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
             <!-- LEFT COLUMN: TASK CARDS LIST (5 cols) -->
-            <div class="lg:col-span-5 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-2xl p-4 lg:p-5 flex flex-col h-[680px]">
+            <div class="lg:col-span-5 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-2xl p-4 lg:p-5 flex flex-col h-[480px] sm:h-[560px] lg:h-[680px]">
                 <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
                     <div class="flex items-center gap-2.5">
                         <div class="p-2 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/40">
@@ -398,7 +399,7 @@ try {
             </div>
 
             <!-- RIGHT COLUMN: INTERACTIVE GIS MAP (7 cols) -->
-            <div class="lg:col-span-7 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-2xl p-4 lg:p-5 flex flex-col h-[680px]">
+            <div class="lg:col-span-7 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-2xl p-4 lg:p-5 flex flex-col h-[380px] sm:h-[460px] lg:h-[680px]">
                 <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
                     <div class="flex items-center gap-2.5">
                         <div class="p-2 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/40">

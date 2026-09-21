@@ -516,7 +516,7 @@ try {
     </script>
     <?php endif; ?>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cemetery Plot Booking & Reservation Portal</title>
     
     <!-- Tailwind CSS with custom slate palette -->
@@ -669,6 +669,8 @@ try {
         .plot-btn-primary:hover { background: linear-gradient(135deg, #06b6d4, #67e8f9); }
         .plot-btn-primary:disabled { background: #1e293b; color: #475569; box-shadow: none; cursor: not-allowed; }
     </style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 selection:bg-cyan-500 selection:text-slate-950">
 

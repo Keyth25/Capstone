@@ -140,10 +140,12 @@ $staff_members = $pdo->query("
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Staff Management - PlotBox GIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex font-sans overflow-hidden">
 
@@ -151,9 +153,14 @@ $staff_members = $pdo->query("
 
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between shrink-0">
-            <h1 class="text-sm font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-users text-purple-400"></i> Staff Account Management
-            </h1>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition" aria-label="Open menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h1 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users text-purple-400"></i> Staff Account Management
+                </h1>
+            </div>
         </header>
 
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto">

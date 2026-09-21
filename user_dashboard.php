@@ -109,7 +109,7 @@ $occupancy_wave_data = [12, 24, 38, 45, 52, $occupancy_rate];
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>User Dashboard - Matutum PlotNav</title>
     <?php if (function_exists('theme_head_script')) { theme_head_script(); } ?>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -177,6 +177,7 @@ $occupancy_wave_data = [12, 24, 38, 45, 52, $occupancy_rate];
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#06b6d4">
     <script src="pwa.js" defer></script>
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex flex-col font-sans overflow-hidden antialiased transition-colors duration-200 selection:bg-cyan-500 selection:text-white">
 

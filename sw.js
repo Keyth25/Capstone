@@ -1,6 +1,7 @@
-const CACHE_NAME = 'plotnav-v2';
+const CACHE_NAME = 'plotnav-v3';
 const ASSETS = [
     'mobile.css',
+    'mobile.js',
     'pwa.js',
     'icons/icon.svg'
 ];

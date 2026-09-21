@@ -323,7 +323,7 @@ try {
 <html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Maintenance Management - Visitor Portal</title>
     <?php theme_head_script(); ?>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -415,13 +415,14 @@ try {
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#7c3aed">
     <script src="pwa.js" defer></script>
+    <script src="mobile.js" defer></script>
 </head>
 <body class="h-full flex flex-col font-sans overflow-hidden antialiased">
 
     <!-- HEADER -->
     <header class="glass-panel border-b px-4 py-3 flex items-center justify-between z-30 shrink-0">
         <div class="flex items-center gap-3">
-            <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-500 transition">
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-500 transition">
                 <i class="fa-solid fa-bars text-sm"></i>
             </button>
             <div class="flex items-center gap-3">
@@ -544,7 +545,7 @@ try {
         </aside>
 
         <!-- MAIN GIS MAP -->
-        <main class="flex-1 relative bg-slate-900">
+        <main class="map-viewport flex-1 relative bg-slate-900">
             <div id="visitorMap" class="h-full w-full"></div>
             
             <!-- Map Layer Switcher -->

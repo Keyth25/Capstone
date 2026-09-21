@@ -34,7 +34,7 @@ function annStatus($a) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Announcements - Matutum PlotNav</title>
     <?php theme_head_script(); ?>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -71,6 +71,7 @@ function annStatus($a) {
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex flex-col font-sans overflow-hidden antialiased transition-colors duration-200">
 

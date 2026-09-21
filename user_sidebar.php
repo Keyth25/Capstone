@@ -85,7 +85,7 @@ $navItems = [
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a855f7; }
 
     /* Sidebar collapsed (icon-only) state on desktop */
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
         aside#sidebar { overflow: visible !important; }
 
         aside.sidebar-collapsed {
@@ -114,7 +114,7 @@ $navItems = [
 </style>
 
 <aside id="sidebar"
-       class="sb-container fixed md:relative inset-y-0 left-0 z-40 w-72 md:w-80 flex flex-col h-full shrink-0 border-r -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out overflow-hidden">
+       class="sb-container fixed lg:relative inset-y-0 left-0 z-40 w-72 lg:w-80 flex flex-col h-full shrink-0 border-r -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out overflow-hidden">
 
     <!-- USER PROFILE SECTION -->
     <div class="relative p-5 border-b border-slate-200/60 dark:border-white/10">
@@ -139,7 +139,7 @@ $navItems = [
 
             <!-- Mobile Close Button -->
             <button onclick="if(typeof toggleSidebar==='function') toggleSidebar();"
-                    class="md:hidden p-2.5 rounded-xl sb-card-element sb-text-bright">
+                    class="lg:hidden p-2.5 rounded-xl sb-card-element sb-text-bright">
                 <i class="fa-solid fa-xmark text-xs"></i>
             </button>
         </div>
@@ -293,7 +293,7 @@ $navItems = [
     <!-- Sidebar Toggle -->
     <button id="sidebarToggleBtn" type="button"
             onclick="if(typeof toggleSidebarVisibility==='function') toggleSidebarVisibility();"
-            class="hidden md:flex group absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-40 w-11 h-11 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 ring-2 ring-white dark:ring-slate-900 hover:scale-110 hover:shadow-xl hover:shadow-purple-500/50 active:scale-95 transition-all duration-200"
+            class="hidden lg:flex group absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-40 w-11 h-11 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 ring-2 ring-white dark:ring-slate-900 hover:scale-110 hover:shadow-xl hover:shadow-purple-500/50 active:scale-95 transition-all duration-200"
             title="Toggle sidebar"
             aria-label="Toggle sidebar"
             aria-expanded="true">

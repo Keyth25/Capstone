@@ -232,7 +232,7 @@ try {
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard - PlotBox GIS System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -285,6 +285,8 @@ try {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 9999px; }
     </style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex font-sans overflow-hidden transition-colors duration-300 antialiased selection:bg-cyan-500 selection:text-white">
 

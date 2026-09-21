@@ -83,7 +83,7 @@ try {
     </script>
     <?php endif; ?>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Manage Sections - Holy Gardens Admin</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -129,6 +129,8 @@ try {
             background: #0f172a;
         }
     </style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 

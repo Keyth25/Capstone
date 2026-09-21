@@ -56,7 +56,7 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Farewells and Sympathy - Cemetery Navigator</title>
 
     <!-- Google Fonts & Font Awesome -->
@@ -230,6 +230,7 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#7c3aed">
     <script src="pwa.js" defer></script>
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-white text-slate-800 font-sans antialiased selection:bg-brand-600 selection:text-white transition-colors duration-200 overflow-x-hidden">
 

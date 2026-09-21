@@ -43,6 +43,7 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Perimeter - PlotBox GIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,6 +52,8 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <style>#adminMap { height: 100%; width: 100%; }</style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex font-sans overflow-hidden">
 
@@ -58,13 +61,18 @@ try {
 
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between shrink-0">
-            <h1 class="text-sm font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-vector-square text-red-400"></i> Cemetery Perimeter Tool
-            </h1>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition" aria-label="Open menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h1 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-vector-square text-red-400"></i> Cemetery Perimeter Tool
+                </h1>
+            </div>
         </header>
 
-        <div class="flex-1 flex overflow-hidden">
-            <div class="w-80 md:w-96 p-4 bg-slate-900/60 border-r border-slate-800 flex flex-col space-y-3 shrink-0">
+        <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+            <div class="w-full lg:w-96 max-h-[45vh] lg:max-h-none p-4 bg-slate-900/60 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col space-y-3 shrink-0 overflow-y-auto">
                 <?php if ($message): ?>
                     <div class="p-3 bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs rounded-lg flex items-center gap-2">
                         <i class="fa-solid fa-circle-check text-emerald-400"></i>
@@ -112,7 +120,7 @@ try {
                 </div>
             </div>
 
-            <div class="flex-1 relative">
+            <div class="flex-1 relative min-h-[320px]">
                 <div id="adminMap"></div>
 
                 <!-- Basemap Switcher Controls -->

@@ -60,13 +60,15 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Payment Verifications - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .receipt-thumb { max-height: 60px; max-width: 80px; object-fit: cover; cursor: pointer; border-radius: 6px; border: 1px solid #334155; }
     </style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen flex font-sans overflow-hidden">
 
@@ -74,11 +76,16 @@ try {
 
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between shrink-0 shadow-md">
-            <div>
-                <h1 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-money-bill-wave text-emerald-500"></i> Payment Verifications
-                </h1>
-                <p class="text-xs text-slate-400">Review uploaded payment receipts and accept verified submissions.</p>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition" aria-label="Open menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-money-bill-wave text-emerald-500"></i> Payment Verifications
+                    </h1>
+                    <p class="text-xs text-slate-400">Review uploaded payment receipts and accept verified submissions.</p>
+                </div>
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-xs font-medium text-slate-300">Admin: <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?></span>

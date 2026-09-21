@@ -463,7 +463,7 @@ try {
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Plots Management - PlotBox GIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -548,6 +548,8 @@ try {
             cursor: ns-resize;
         }
     </style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex font-sans overflow-hidden">
 
@@ -568,8 +570,8 @@ try {
             </button>
         </header>
 
-        <div class="flex-1 flex overflow-hidden">
-            <div class="w-80 md:w-96 p-4 glass-panel border-r border-slate-200 dark:border-slate-800/80 flex flex-col space-y-4 shrink-0 overflow-y-auto">
+        <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+            <div class="w-full lg:w-96 max-h-[45vh] lg:max-h-none p-4 glass-panel border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800/80 flex flex-col space-y-4 shrink-0 overflow-y-auto">
                 <?php if ($message): ?>
                     <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs rounded-xl flex items-center gap-2">
                         <i class="fa-solid fa-circle-check"></i><?= htmlspecialchars($message) ?>
@@ -921,7 +923,7 @@ try {
             </div>
 
             <!-- MAP DISPLAY -->
-            <div class="flex-1 relative">
+            <div class="flex-1 relative min-h-[320px]">
                 <div id="adminMap"></div>
 
                 <div class="absolute top-4 right-4 z-[1000] bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-xl p-1 flex items-center backdrop-blur shadow-lg">

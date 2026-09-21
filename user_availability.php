@@ -40,7 +40,7 @@ $forecast_exhaustion_date = date('F Y', strtotime("+{$months_remaining} months")
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Check Plot Availability - Matutum PlotNav</title>
     <?php theme_head_script(); ?>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -66,6 +66,8 @@ $forecast_exhaustion_date = date('F Y', strtotime("+{$months_remaining} months")
         .custom-scroll::-webkit-scrollbar { width: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
     </style>
+    <link rel="stylesheet" href="mobile.css">
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-screen flex flex-col font-sans overflow-hidden transition-colors duration-200">
 

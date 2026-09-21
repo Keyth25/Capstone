@@ -10,7 +10,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 </script>
 <?php endif; ?>
 <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
-<aside id="sidebar" class="absolute md:relative z-20 w-80 md:w-96 h-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-slate-800/50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 shrink-0 backdrop-blur-xl">
+<aside id="sidebar" class="absolute lg:relative z-20 w-80 lg:w-96 h-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-slate-800/50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0 shrink-0 backdrop-blur-xl">
     
     <!-- ADMIN PROFILE SECTION -->
     <div class="p-4 border-b border-slate-800/50 bg-gradient-to-r from-blue-900/20 to-transparent">
@@ -28,7 +28,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             <button id="themeToggle" type="button" onclick="if(typeof toggleTheme==='function'){toggleTheme(); const i=this.querySelector('i'); i.className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-cyan-400':'fa-solid fa-sun text-amber-400';}" class="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition" title="Toggle Theme">
                 <i class="fa-solid fa-moon text-sm"></i>
             </button>
-            <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition">
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>

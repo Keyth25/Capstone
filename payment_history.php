@@ -46,7 +46,7 @@ try {
     </script>
     <?php endif; ?>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Payment History - Mount Matutum Memorial Park</title>
 
     <!-- Dynamic Theme Header Script -->
@@ -81,6 +81,7 @@ try {
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#7c3aed">
     <script src="pwa.js" defer></script>
+    <script src="mobile.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 
