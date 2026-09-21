@@ -7,6 +7,33 @@ $mode = $_GET['mode'] ?? 'login'; // 'login', 'register', or 'forgot'
 $embed = ($_GET['embed'] ?? '') === '1';
 $embedParam = $embed ? '&amp;embed=1' : '';
 
+// Already signed in? Bounce straight to the right dashboard so the phone's
+// back button never lands on a login screen while the session is still alive.
+if (!empty($_SESSION['user_id']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $dash = match ($_SESSION['role'] ?? 'user') {
+        'admin' => 'admin_dashboard.php',
+        'staff' => 'staff.php',
+        default => 'user_dashboard.php',
+    };
+    if ($embed) {
+        ?>
+        <!DOCTYPE html>
+        <html lang="en" style="background:transparent">
+        <body style="background:transparent">
+            <script>
+                if (window.parent) {
+                    window.parent.postMessage({type: 'cemeterynav-redirect', url: <?= json_encode($dash) ?>}, '*');
+                }
+            </script>
+        </body>
+        </html>
+        <?php
+    } else {
+        header('Location: ' . $dash);
+    }
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $action = $_POST['action'] ?? 'login';
     $email = trim($_POST['email'] ?? '');
@@ -161,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <html lang="en">
                 <body>
                     <script>
-                        window.location.href = <?= json_encode($dashboard) ?>;
+                        window.location.replace(<?= json_encode($dashboard) ?>);
                     </script>
                 </body>
                 </html>

@@ -684,7 +684,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
     <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800/80">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="user_dashboard.php" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all text-xs font-semibold" title="Back to dashboard">
+                <a href="user_dashboard.php" onclick="handleHeaderBack(event)" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all text-xs font-semibold" title="Back to dashboard">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     <span class="hidden sm:inline">Back</span>
                 </a>
@@ -1357,10 +1357,35 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         let _preloadedRecs = <?= json_encode($preloaded_recs) ?>;
         const adminPlotsData = <?= json_encode($adminPlots) ?>;
 
+        let wizardHistoryPushed = false;
+
         function goToLanding() {
             document.getElementById('step-landing').classList.remove('hidden');
             document.getElementById('wizard-container').classList.add('hidden');
+            window.scrollTo({ top: 0 });
         }
+
+        // Header Back: while inside the wizard, return to the purpose selection
+        // screen first; on the selection screen it proceeds to the dashboard.
+        function handleHeaderBack(e) {
+            if (!document.getElementById('wizard-container').classList.contains('hidden')) {
+                e.preventDefault();
+                if (wizardHistoryPushed) {
+                    history.back();
+                } else {
+                    goToLanding();
+                }
+            }
+        }
+
+        // Browser Back also returns to the selection screen instead of leaving
+        // the page, since the wizard is a pushed history state.
+        window.addEventListener('popstate', () => {
+            wizardHistoryPushed = false;
+            if (!document.getElementById('wizard-container').classList.contains('hidden')) {
+                goToLanding();
+            }
+        });
 
         function selectPurpose(type) {
             selectedPurpose = type;
@@ -1368,6 +1393,11 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
 
             document.getElementById('step-landing').classList.add('hidden');
             document.getElementById('wizard-container').classList.remove('hidden');
+
+            if (!wizardHistoryPushed) {
+                history.pushState({ resWizard: true }, '');
+                wizardHistoryPushed = true;
+            }
 
             const fieldsDec = document.getElementById('fields-deceased');
             const fieldsFut = document.getElementById('fields-future');
