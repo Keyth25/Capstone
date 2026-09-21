@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plotnav-v3';
+const CACHE_NAME = 'plotnav-v4';
 const ASSETS = [
     'mobile.css',
     'mobile.js',
@@ -40,9 +40,15 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // Static assets: network-first so fixes ship immediately;
+    // fall back to cache only when offline.
     event.respondWith(
-        caches.match(request).then(cached => {
-            return cached || fetch(request);
-        })
+        fetch(request).then(response => {
+            if (response && response.ok && request.method === 'GET' && url.origin === location.origin) {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+            }
+            return response;
+        }).catch(() => caches.match(request))
     );
 });

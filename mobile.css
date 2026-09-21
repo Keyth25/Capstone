@@ -45,24 +45,15 @@ svg { max-width: 100%; }
         bottom: 0;
         height: 100dvh;
         z-index: 80;
-        box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.55);
         will-change: transform;
     }
 
-    /* Backdrop injected by mobile.js */
-    #sidebarBackdrop {
-        position: fixed;
-        inset: 0;
-        z-index: 70;
-        background: rgba(2, 6, 23, 0.6);
-        backdrop-filter: blur(2px);
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.25s ease, visibility 0.25s ease;
-    }
-    #sidebarBackdrop.visible {
-        opacity: 1;
-        visibility: visible;
+    /* Dim the page while the drawer is open. A giant box-shadow spread is part
+       of the sidebar element itself, so it can never render above the drawer
+       or intercept its taps (unlike a separate backdrop element, which gets
+       trapped under/over sibling stacking contexts). */
+    #sidebar:not(.-translate-x-full) {
+        box-shadow: 0 0 0 200vmax rgba(2, 6, 23, 0.55);
     }
 
     /* Lock background scroll while the drawer is open */

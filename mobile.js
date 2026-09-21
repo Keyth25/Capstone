@@ -19,28 +19,17 @@
         return window.innerWidth >= DESKTOP_BP;
     }
 
-    /* ---------- Sidebar backdrop + state sync ---------- */
+    /* ---------- Sidebar open-state sync + click-away ---------- */
     function initSidebar() {
         var sidebar = document.getElementById('sidebar');
         if (!sidebar) return;
 
-        var backdrop = document.getElementById('sidebarBackdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.id = 'sidebarBackdrop';
-            backdrop.setAttribute('aria-hidden', 'true');
-        }
-        // Insert as a sibling right after the sidebar so both live in the same
-        // stacking context. (User pages wrap sidebar+main in a `z-10` container;
-        // a body-level backdrop would render above the drawer and block clicks.)
-        var anchor = sidebar.parentNode || document.body;
-        if (backdrop.parentNode !== anchor) {
-            anchor.insertBefore(backdrop, sidebar.nextSibling);
+        function isOpen() {
+            return !isDesktop() && !sidebar.classList.contains('-translate-x-full');
         }
 
         function syncState() {
-            var open = !isDesktop() && !sidebar.classList.contains('-translate-x-full');
-            backdrop.classList.toggle('visible', open);
+            var open = isOpen();
             document.body.classList.toggle('sidebar-open', open);
             sidebar.setAttribute('aria-hidden', String(!open && !isDesktop()));
         }
@@ -56,10 +45,17 @@
             attributeFilter: ['class']
         });
 
-        backdrop.addEventListener('click', closeSidebar);
+        // Tap outside the drawer closes it (capture phase so the tap never
+        // reaches the underlying buttons/links, like a real backdrop).
+        document.addEventListener('click', function (e) {
+            if (!isOpen() || sidebar.contains(e.target)) return;
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+        }, true);
 
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+            if (e.key === 'Escape' && isOpen()) {
                 closeSidebar();
             }
         });
@@ -74,7 +70,6 @@
         window.addEventListener('resize', function () {
             if (isDesktop() && document.body.classList.contains('sidebar-open')) {
                 document.body.classList.remove('sidebar-open');
-                backdrop.classList.remove('visible');
             }
         });
 
