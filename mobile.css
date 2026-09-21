@@ -154,6 +154,15 @@ svg { max-width: 100%; }
     /* Long text never pushes the page wider */
     h1, h2, h3, p, td, th, a, span, li { overflow-wrap: anywhere; }
 
+    /* ...but cells inside horizontal scroll containers keep real word
+       widths, so columns scroll sideways instead of collapsing into
+       one-character vertical columns */
+    .overflow-x-auto td, .overflow-x-auto th,
+    .overflow-y-auto td, .overflow-y-auto th,
+    .mobile-table-wrap td, .mobile-table-wrap th {
+        overflow-wrap: normal;
+    }
+
     /* Safe-area insets (Capacitor / notched devices) */
     header.sticky, header.fixed {
         padding-top: calc(0.5rem + env(safe-area-inset-top)) !important;
