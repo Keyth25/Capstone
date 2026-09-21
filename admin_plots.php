@@ -462,6 +462,7 @@ try {
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+    <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Plots Management - PlotBox GIS</title>
@@ -1014,12 +1015,10 @@ try {
         let lengthHandleMarker = null;
 
         function initTheme() {
-            const isDark = localStorage.getItem('theme') === 'dark';
+            const stored = localStorage.getItem('theme');
+            const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = stored === 'dark' || (stored !== 'light' && sysDark);
             document.documentElement.classList.toggle('dark', isDark);
-        }
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
         initTheme();
 

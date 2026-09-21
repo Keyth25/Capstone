@@ -139,6 +139,7 @@ $staff_members = $pdo->query("
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Staff Management - PlotBox GIS</title>

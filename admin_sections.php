@@ -75,6 +75,7 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Manage Sections - Holy Gardens Admin</title>
@@ -144,6 +145,10 @@ try {
                 <i class="fa-solid fa-arrow-left text-sky-400"></i> Admin Panel
             </a>
             <span class="text-slate-400 hidden sm:inline"><i class="fa-solid fa-user-shield mr-1 text-slate-300"></i> <?= htmlspecialchars($_SESSION['name'] ?? 'Admin') ?></span>
+            <button id="themeToggle" type="button" onclick="if(typeof toggleTheme==='function'){toggleTheme(); const i=this.querySelector('i'); i.className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-cyan-400 text-sm':'fa-solid fa-sun text-amber-400 text-sm';}" class="p-2 rounded bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition" title="Toggle Theme">
+                <i class="fa-solid fa-moon text-sm"></i>
+            </button>
+            <script>document.getElementById('themeToggle').querySelector('i').className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-cyan-400 text-sm':'fa-solid fa-sun text-amber-400 text-sm';</script>
             <a href="logout.php" class="bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white px-3 py-1.5 rounded transition font-semibold">
                 <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
             </a>

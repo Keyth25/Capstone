@@ -208,6 +208,7 @@ try {
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+    <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Staff Portal - Maintenance Task Board</title>
@@ -299,6 +300,10 @@ try {
                     <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
                     <span class="text-xs font-medium text-slate-300">Staff: <strong class="text-white"><?= htmlspecialchars($_SESSION['name'] ?? 'Staff') ?></strong></span>
                 </div>
+                <button id="themeToggle" type="button" onclick="if(typeof toggleTheme==='function'){toggleTheme(); const i=this.querySelector('i'); i.className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-cyan-400 text-sm':'fa-solid fa-sun text-amber-400 text-sm';}" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition" title="Toggle Theme">
+                    <i class="fa-solid fa-moon text-sm"></i>
+                </button>
+                <script>document.getElementById('themeToggle').querySelector('i').className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-cyan-400 text-sm':'fa-solid fa-sun text-amber-400 text-sm';</script>
                 <a href="logout.php" class="inline-flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white transition shadow-sm">
                     <i class="fa-solid fa-right-from-bracket text-cyan-400"></i> Logout
                 </a>

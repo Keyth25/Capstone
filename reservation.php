@@ -508,6 +508,7 @@ try {
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+    <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cemetery Plot Booking & Reservation Portal</title>
@@ -2782,7 +2783,13 @@ try {
         };
 
         document.getElementById('themeToggle').onclick = () => {
-            document.documentElement.classList.toggle('dark');
+            if (typeof toggleTheme === 'function') toggleTheme();
+            const icon = document.querySelector('#themeToggle i');
+            const isDark = document.documentElement.classList.contains('dark');
+            if (icon) {
+                icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
         };
     </script>
 </body>

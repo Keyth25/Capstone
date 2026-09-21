@@ -130,6 +130,12 @@ $navItems = [
                 </span>
             </div>
 
+            <button id="sbThemeToggle" type="button" onclick="if(typeof toggleTheme==='function'){toggleTheme(); const i=this.querySelector('i'); i.className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-purple-400 text-xs':'fa-solid fa-sun text-amber-400 text-xs';}"
+                    class="p-2.5 rounded-xl sb-card-element sb-text-bright" title="Toggle Theme">
+                <i class="fa-solid fa-moon text-xs"></i>
+            </button>
+            <script>document.getElementById('sbThemeToggle').querySelector('i').className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-purple-400 text-xs':'fa-solid fa-sun text-amber-400 text-xs';</script>
+
             <!-- Mobile Close Button -->
             <button onclick="if(typeof toggleSidebar==='function') toggleSidebar();"
                     class="lg:hidden p-2.5 rounded-xl sb-card-element sb-text-bright">
