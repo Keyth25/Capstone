@@ -1,5 +1,6 @@
 <?php
 require 'config.php';
+require_once __DIR__ . '/includes/supabase_storage.php';
 
 // Authorization & Foreign Key Guard Check
 if (!isset($_SESSION['user_id'])) {
@@ -128,11 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
                 // Process Uploaded Photos
                 if (!empty($_FILES['photos']['name'][0])) {
-                    $upload_dir = __DIR__ . '/uploads/maintenance/';
-                    if (!is_dir($upload_dir)) {
-                        mkdir($upload_dir, 0755, true);
-                    }
-
                     foreach ($_FILES['photos']['tmp_name'] as $key => $tmp_name) {
                         if ($_FILES['photos']['error'][$key] === UPLOAD_ERR_OK) {
                             $file_size = $_FILES['photos']['size'][$key];
@@ -146,10 +142,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
                             if ($file_size <= $max_file_size && in_array($file_ext, $allowed_extensions) && in_array($mime_type, $allowed_mime_types)) {
                                 $safe_filename = 'req_' . $request_id . '_' . bin2hex(random_bytes(8)) . '.' . $file_ext;
-                                $destination = $upload_dir . $safe_filename;
-                                $relative_path = 'uploads/maintenance/' . $safe_filename;
+                                $stored_path = supabase_storage_upload($tmp_name, $safe_filename);
 
-                                if (move_uploaded_file($tmp_name, $destination)) {
+                                if ($stored_path === null) {
+                                    $upload_dir = __DIR__ . '/uploads/maintenance/';
+                                    if (!is_dir($upload_dir)) {
+                                        mkdir($upload_dir, 0755, true);
+                                    }
+                                    if (move_uploaded_file($tmp_name, $upload_dir . $safe_filename)) {
+                                        $stored_path = 'uploads/maintenance/' . $safe_filename;
+                                    }
+                                }
+
+                                if ($stored_path !== null) {
                                     $img_stmt = $pdo->prepare("
                                         INSERT INTO public.maintenance_photos (maintenance_request_id, uploaded_by, photo_type, file_path)
                                         VALUES (:req_id, :user_id::uuid, 'Request', :file_path)
@@ -157,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                     $img_stmt->execute([
                                         'req_id'    => $request_id,
                                         'user_id'   => $user_id,
-                                        'file_path' => $relative_path
+                                        'file_path' => $stored_path
                                     ]);
                                 }
                             }

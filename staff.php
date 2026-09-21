@@ -1,5 +1,6 @@
 <?php
 require 'config.php';
+require_once __DIR__ . '/includes/supabase_storage.php';
 
 // Check if user is logged in and has 'staff' role
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'staff') {
@@ -41,17 +42,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             // Handle "Before" Photos
             if (!empty($_FILES['before_photos']['name'][0])) {
-                $upload_dir = __DIR__ . '/uploads/maintenance/';
-                if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
-
                 foreach ($_FILES['before_photos']['tmp_name'] as $key => $tmp_name) {
                     if ($_FILES['before_photos']['error'][$key] === UPLOAD_ERR_OK) {
                         $file_ext = strtolower(pathinfo($_FILES['before_photos']['name'][$key], PATHINFO_EXTENSION));
                         if ($_FILES['before_photos']['size'][$key] <= $max_file_size && in_array($file_ext, $allowed_extensions)) {
                             $filename = 'before_' . $request_id . '_' . bin2hex(random_bytes(6)) . '.' . $file_ext;
-                            if (move_uploaded_file($tmp_name, $upload_dir . $filename)) {
+                            $stored_path = supabase_storage_upload($tmp_name, $filename);
+                            if ($stored_path === null) {
+                                $upload_dir = __DIR__ . '/uploads/maintenance/';
+                                if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                                if (move_uploaded_file($tmp_name, $upload_dir . $filename)) {
+                                    $stored_path = 'uploads/maintenance/' . $filename;
+                                }
+                            }
+                            if ($stored_path !== null) {
                                 $img_stmt = $pdo->prepare("INSERT INTO public.maintenance_photos (maintenance_request_id, uploaded_by, photo_type, file_path) VALUES (?, ?, 'Before', ?)");
-                                $img_stmt->execute([$request_id, $staff_id, 'uploads/maintenance/' . $filename]);
+                                $img_stmt->execute([$request_id, $staff_id, $stored_path]);
                             }
                         }
                     }
@@ -88,17 +94,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             // Handle "Completion" Photos
             if (!empty($_FILES['after_photos']['name'][0])) {
-                $upload_dir = __DIR__ . '/uploads/maintenance/';
-                if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
-
                 foreach ($_FILES['after_photos']['tmp_name'] as $key => $tmp_name) {
                     if ($_FILES['after_photos']['error'][$key] === UPLOAD_ERR_OK) {
                         $file_ext = strtolower(pathinfo($_FILES['after_photos']['name'][$key], PATHINFO_EXTENSION));
                         if ($_FILES['after_photos']['size'][$key] <= $max_file_size && in_array($file_ext, $allowed_extensions)) {
                             $filename = 'after_' . $request_id . '_' . bin2hex(random_bytes(6)) . '.' . $file_ext;
-                            if (move_uploaded_file($tmp_name, $upload_dir . $filename)) {
+                            $stored_path = supabase_storage_upload($tmp_name, $filename);
+                            if ($stored_path === null) {
+                                $upload_dir = __DIR__ . '/uploads/maintenance/';
+                                if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                                if (move_uploaded_file($tmp_name, $upload_dir . $filename)) {
+                                    $stored_path = 'uploads/maintenance/' . $filename;
+                                }
+                            }
+                            if ($stored_path !== null) {
                                 $img_stmt = $pdo->prepare("INSERT INTO public.maintenance_photos (maintenance_request_id, uploaded_by, photo_type, file_path) VALUES (?, ?, 'Completion', ?)");
-                                $img_stmt->execute([$request_id, $staff_id, 'uploads/maintenance/' . $filename]);
+                                $img_stmt->execute([$request_id, $staff_id, $stored_path]);
                             }
                         }
                     }
