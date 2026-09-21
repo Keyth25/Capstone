@@ -11,13 +11,6 @@ $navItems = [
     ['label' => 'Maintenance Request', 'file' => 'user_maintenance.php',  'icon' => 'fa-screwdriver-wrench'],
 ];
 ?>
-<?php if (!empty($_SESSION['user_id'])): ?>
-<script>
-    try {
-        if (!sessionStorage.getItem('cemeterynav_logged_in')) window.location.replace('logout.php');
-    } catch (e) {}
-</script>
-<?php endif; ?>
 
 <style>
     /* Modern Glassmorphism Variables */

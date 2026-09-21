@@ -140,7 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <html lang="en" style="background:transparent">
                     <body style="background:transparent">
                         <script>
-                            try { sessionStorage.setItem('cemeterynav_logged_in', '1'); } catch (e) {}
                             if (window.parent) {
                                 window.parent.postMessage({type: 'cemeterynav-redirect', url: <?= json_encode($dashboard) ?>}, '*');
                             }
@@ -155,7 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <html lang="en">
                 <body>
                     <script>
-                        sessionStorage.setItem('cemeterynav_logged_in', '1');
                         window.location.href = <?= json_encode($dashboard) ?>;
                     </script>
                 </body>

@@ -38,13 +38,6 @@ try {
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <?php if (!empty($_SESSION['user_id'])): ?>
-    <script>
-        try {
-            if (!sessionStorage.getItem('cemeterynav_logged_in')) window.location.replace('logout.php');
-        } catch (e) {}
-    </script>
-    <?php endif; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Payment History - Mount Matutum Memorial Park</title>

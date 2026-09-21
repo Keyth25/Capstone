@@ -74,16 +74,6 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
         }
     </script>
 
-    <!-- Tab-scoped session guard: sessionStorage is cleared when the tab closes,
-         so a leftover PHP session means the tab was reopened -> force logout. -->
-    <?php if ($isLoggedIn): ?>
-    <script>
-        try {
-            if (!sessionStorage.getItem('cemeterynav_logged_in')) window.location.replace('logout.php');
-        } catch (e) {}
-    </script>
-    <?php endif; ?>
-
     <!-- Tailwind CSS with Custom Purple Palette Configuration -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -827,7 +817,6 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
 
     window.addEventListener('message', (e) => {
         if (e.data && e.data.type === 'cemeterynav-redirect' && e.data.url) {
-            try { sessionStorage.setItem('cemeterynav_logged_in', '1'); } catch (err) {}
             window.location.href = e.data.url;
         }
     });
