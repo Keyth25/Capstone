@@ -19,7 +19,8 @@ try {
                a.date_of_birth as app_dob, a.gender as app_gender, a.civil_status, a.contact_number,
                a.email_address, a.complete_address,
                p.plot_number, p.status as plot_status, p.price as plot_price,
-               s.section_name, s.section_code
+               p.latitude as plot_latitude, p.longitude as plot_longitude, p.geojson_shape,
+               s.section_name, s.section_code, s.geojson as section_geojson
         FROM public.reservations r
         LEFT JOIN public.applicants a ON r.applicant_id = a.id
         LEFT JOIN public.plots p ON r.plot_id = p.id
@@ -30,6 +31,8 @@ try {
     $reservation = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($reservation) {
+        $hasPlotLocation = !empty($reservation['geojson_shape'])
+            || (is_numeric($reservation['plot_latitude'] ?? null) && is_numeric($reservation['plot_longitude'] ?? null));
         if ($reservation['reservation_type'] === 'Deceased Relative') {
             $dStmt = $pdo->prepare("SELECT * FROM public.deceased_information WHERE reservation_id = ?");
             $dStmt->execute([$reservation['id']]);
@@ -66,6 +69,8 @@ try {
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .glass-panel {
@@ -79,6 +84,16 @@ try {
         }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 9999px; }
+        .leaflet-container { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .leaflet-tooltip.res-map-label { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 10px; font-weight: 700; color: #0891b2; padding: 2px 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .leaflet-tooltip.res-map-label::before { display: none; }
+        .basemap-toggle { display: flex; gap: 2px; padding: 3px; border-radius: 999px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+        html.dark .basemap-toggle { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        html:not(.dark) .basemap-toggle { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(0, 0, 0, 0.1); }
+        .basemap-toggle .bm-btn { padding: 5px 14px; font-size: 11px; font-weight: 700; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; border: none; background: transparent; transition: all 0.15s ease; }
+        html.dark .basemap-toggle .bm-btn { color: #94a3b8; }
+        html:not(.dark) .basemap-toggle .bm-btn { color: #475569; }
+        .basemap-toggle .bm-btn.active { background: #22d3ee; color: #020617; }
     </style>
     <link rel="stylesheet" href="mobile.css">
     <script src="mobile.js" defer></script>
@@ -165,8 +180,13 @@ try {
 
                     <!-- Plot Details -->
                     <div class="glass-panel rounded-2xl p-5 space-y-4">
-                        <h2 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-                            <i class="fa-solid fa-map-pin text-emerald-500"></i> Plot Details
+                        <h2 class="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-map-pin text-emerald-500"></i> Plot Details</span>
+                            <?php if ($hasPlotLocation): ?>
+                                <button type="button" onclick="openMapModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold hover:bg-emerald-500/20 transition">
+                                    <i class="fa-solid fa-map"></i> View on Map
+                                </button>
+                            <?php endif; ?>
                         </h2>
                         <div class="grid grid-cols-2 gap-y-3 text-xs">
                             <span class="text-slate-500 dark:text-slate-400">Section</span>
@@ -269,6 +289,25 @@ try {
                         <?php endif; ?>
                     </div>
                 </div>
+
+                <?php if ($hasPlotLocation): ?>
+                <!-- Plot Location Map Modal -->
+                <div id="mapModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onclick="closeMapModal()"></div>
+                    <div class="relative glass-panel rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+                        <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-slate-800">
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-location-dot text-emerald-500"></i>
+                                Plot Location &mdash; <?= htmlspecialchars(trim(($reservation['section_code'] ?? '') . ' ' . ($reservation['plot_number'] ?? ''))) ?>
+                            </h3>
+                            <button type="button" onclick="closeMapModal()" class="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <div id="resMap" class="w-full h-[420px] bg-slate-100 dark:bg-slate-900"></div>
+                    </div>
+                </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>
@@ -279,6 +318,84 @@ try {
             const icon = document.getElementById('themeToggleIcon');
             icon.className = document.documentElement.classList.contains('dark') ? 'fa-solid fa-moon text-sm' : 'fa-solid fa-sun text-sm';
         };
+        <?php if (!empty($reservation) && $hasPlotLocation): ?>
+        const plotLat = <?= is_numeric($reservation['plot_latitude'] ?? null) ? (float)$reservation['plot_latitude'] : 'null' ?>;
+        const plotLng = <?= is_numeric($reservation['plot_longitude'] ?? null) ? (float)$reservation['plot_longitude'] : 'null' ?>;
+        const plotGeo = <?= ($g = json_decode($reservation['geojson_shape'] ?? 'null', true)) ? json_encode($g) : 'null' ?>;
+        const sectionGeo = <?= ($sg = json_decode($reservation['section_geojson'] ?? 'null', true)) ? json_encode($sg) : 'null' ?>;
+        const plotLabel = <?= json_encode(trim(($reservation['section_code'] ?? '') . ' - ' . ($reservation['plot_number'] ?? ''))) ?>;
+        let resMap = null;
+
+        function openMapModal() {
+            document.getElementById('mapModal').classList.remove('hidden');
+            if (!resMap) {
+                resMap = L.map('resMap', { attributionControl: false }).setView(
+                    [plotLat !== null ? plotLat : 6.2201, plotLng !== null ? plotLng : 125.0647], 19
+                );
+
+                const satelliteTile = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxNativeZoom: 20, maxZoom: 22 }).addTo(resMap);
+                const streetTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxNativeZoom: 19, maxZoom: 22 });
+
+                const basemapCtl = L.control({ position: 'bottomleft' });
+                basemapCtl.onAdd = function () {
+                    const div = L.DomUtil.create('div', 'basemap-toggle');
+                    [['Map', 'map'], ['Satellite', 'sat']].forEach(function (pair) {
+                        const label = pair[0], base = pair[1];
+                        const b = L.DomUtil.create('button', 'bm-btn' + (base === 'sat' ? ' active' : ''), div);
+                        b.type = 'button';
+                        b.innerText = label;
+                        L.DomEvent.on(b, 'click', function (e) {
+                            L.DomEvent.stop(e);
+                            div.querySelectorAll('.bm-btn').forEach(function (x) { x.classList.remove('active'); });
+                            b.classList.add('active');
+                            if (base === 'sat') { resMap.removeLayer(streetTile); satelliteTile.addTo(resMap); }
+                            else { resMap.removeLayer(satelliteTile); streetTile.addTo(resMap); }
+                        });
+                    });
+                    L.DomEvent.disableClickPropagation(div);
+                    L.DomEvent.disableScrollPropagation(div);
+                    return div;
+                };
+                basemapCtl.addTo(resMap);
+
+                if (sectionGeo) {
+                    L.geoJSON(sectionGeo, {
+                        style: { color: '#94a3b8', weight: 1.5, fillOpacity: 0.05, dashArray: '4 4' }
+                    }).addTo(resMap);
+                }
+
+                let bounds = null;
+                if (plotGeo) {
+                    const layer = L.geoJSON(plotGeo, {
+                        style: { color: '#06b6d4', weight: 2.5, fillColor: '#06b6d4', fillOpacity: 0.35 }
+                    }).addTo(resMap);
+                    if (plotLabel) {
+                        layer.bindTooltip(plotLabel, { permanent: true, direction: 'center', className: 'res-map-label' });
+                    }
+                    bounds = layer.getBounds();
+                }
+                if (plotLat !== null && plotLng !== null) {
+                    const pin = L.divIcon({
+                        className: '',
+                        html: '<div style="width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#06b6d4;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,0.3);"></div>',
+                        iconSize: [24, 24], iconAnchor: [12, 24]
+                    });
+                    L.marker([plotLat, plotLng], { icon: pin }).addTo(resMap);
+                    if (!bounds) bounds = L.latLngBounds([plotLat, plotLng], [plotLat, plotLng]);
+                }
+                if (bounds) resMap.fitBounds(bounds.pad(0.6), { maxZoom: 20 });
+            }
+            setTimeout(function () { resMap.invalidateSize(); }, 200);
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeMapModal();
+        });
+        <?php endif; ?>
     </script>
 </body>
 </html>
