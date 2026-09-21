@@ -29,7 +29,13 @@
             backdrop = document.createElement('div');
             backdrop.id = 'sidebarBackdrop';
             backdrop.setAttribute('aria-hidden', 'true');
-            document.body.appendChild(backdrop);
+        }
+        // Insert as a sibling right after the sidebar so both live in the same
+        // stacking context. (User pages wrap sidebar+main in a `z-10` container;
+        // a body-level backdrop would render above the drawer and block clicks.)
+        var anchor = sidebar.parentNode || document.body;
+        if (backdrop.parentNode !== anchor) {
+            anchor.insertBefore(backdrop, sidebar.nextSibling);
         }
 
         function syncState() {
