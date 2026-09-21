@@ -269,7 +269,7 @@ try {
             </div>
 
             <!-- FLOATING LAYER SWITCHER & CONTROLS (bottom-center on phones, top-right on larger screens) -->
-            <div class="absolute z-[1000] bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 sm:bottom-auto sm:left-auto sm:translate-x-0 sm:top-4 sm:right-4 pointer-events-auto glass-panel border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 flex items-center gap-1 shadow-lg">
+            <div class="absolute z-[1000] bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 scale-90 origin-bottom sm:scale-100 sm:bottom-auto sm:left-auto sm:translate-x-0 sm:top-4 sm:right-4 pointer-events-auto glass-panel border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 flex items-center gap-1 shadow-lg">
                 <button onclick="setUserBaseMap('satellite')" id="btnSatUser" class="px-3 py-1.5 rounded-xl bg-cyan-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
                     <i data-lucide="layers" class="w-3.5 h-3.5"></i> Satellite
                 </button>
