@@ -266,19 +266,20 @@ try {
                     <?php endif; ?>
                 </div>
                 
-                <!-- FLOATING LAYER SWITCHER & CONTROLS -->
-                <div class="pointer-events-auto glass-panel border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 flex items-center gap-1 shadow-lg self-end sm:self-auto">
-                    <button onclick="setUserBaseMap('satellite')" id="btnSatUser" class="px-3 py-1.5 rounded-xl bg-cyan-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
-                        <i data-lucide="layers" class="w-3.5 h-3.5"></i> Satellite
-                    </button>
-                    <button onclick="setUserBaseMap('street')" id="btnStreetUser" class="px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs flex items-center gap-1.5 transition">
-                        <i data-lucide="map" class="w-3.5 h-3.5"></i> Street Map
-                    </button>
-                    <div class="h-4 w-[1px] bg-slate-300 dark:bg-slate-700 mx-1"></div>
-                    <button onclick="resetUserMapView()" class="p-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition" title="Recenter Map">
-                        <i data-lucide="locate-fixed" class="w-4 h-4"></i>
-                    </button>
-                </div>
+            </div>
+
+            <!-- FLOATING LAYER SWITCHER & CONTROLS (bottom-center on phones, top-right on larger screens) -->
+            <div class="absolute z-[1000] bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 sm:bottom-auto sm:left-auto sm:translate-x-0 sm:top-4 sm:right-4 pointer-events-auto glass-panel border border-slate-200/80 dark:border-slate-800 rounded-2xl p-1.5 flex items-center gap-1 shadow-lg">
+                <button onclick="setUserBaseMap('satellite')" id="btnSatUser" class="px-3 py-1.5 rounded-xl bg-cyan-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i> Satellite
+                </button>
+                <button onclick="setUserBaseMap('street')" id="btnStreetUser" class="px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold text-xs flex items-center gap-1.5 transition">
+                    <i data-lucide="map" class="w-3.5 h-3.5"></i> Street Map
+                </button>
+                <div class="h-4 w-[1px] bg-slate-300 dark:bg-slate-700 mx-1"></div>
+                <button onclick="resetUserMapView()" class="p-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition" title="Recenter Map">
+                    <i data-lucide="locate-fixed" class="w-4 h-4"></i>
+                </button>
             </div>
         </main>
     </div>
