@@ -75,6 +75,7 @@ try {
     <meta name="theme-color" content="#7c3aed">
     <script src="pwa.js" defer></script>
     <script src="mobile.js" defer></script>
+    <script src="announcement_live.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 

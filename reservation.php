@@ -676,6 +676,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
     </style>
     <link rel="stylesheet" href="mobile.css">
     <script src="mobile.js" defer></script>
+    <script src="announcement_live.js" defer></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 selection:bg-cyan-500 selection:text-slate-950">
 

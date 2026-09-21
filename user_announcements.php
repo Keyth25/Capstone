@@ -99,6 +99,7 @@ function annStatus($a) {
 
         <main class="flex-1 p-4 md:p-6 overflow-y-auto dashboard-scroll space-y-4">
 
+            <div id="annList" class="space-y-4">
             <?php if (empty($announcements)): ?>
                 <div class="glass-card rounded-2xl p-8 text-center">
                     <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
@@ -144,11 +145,79 @@ function annStatus($a) {
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+            </div>
         </main>
     </div>
 
     <script>
         lucide.createIcons();
+
+        // Live re-render when announcements change (polled by announcement_live.js)
+        (function () {
+            var STATUS_COLORS = {
+                emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                amber:   'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                red:     'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+                slate:   'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20'
+            };
+
+            function annStatus(a) {
+                if (!a.is_active) return ['Inactive', 'slate'];
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (a.end_date && new Date(a.end_date + 'T00:00:00') < today) return ['Expired', 'red'];
+                if (a.start_date && new Date(a.start_date + 'T00:00:00') > today) return ['Scheduled', 'amber'];
+                return ['Active', 'emerald'];
+            }
+
+            function render(anns) {
+                var container = document.getElementById('annList');
+                if (!container) return;
+                var L = window.AnnouncementLive || {};
+                var esc = L.escapeHtml || function (s) { return String(s || ''); };
+                var br = L.nl2br || esc;
+                var fmt = L.formatDate || function (s) { return s || ''; };
+
+                if (!anns.length) {
+                    container.innerHTML =
+                        '<div class="glass-card rounded-2xl p-8 text-center">' +
+                            '<div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">' +
+                                '<i data-lucide="inbox" class="w-6 h-6 text-slate-400"></i>' +
+                            '</div>' +
+                            '<h3 class="text-sm font-bold text-slate-900 dark:text-white">No announcements yet</h3>' +
+                            '<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Check back later for cemetery updates and events.</p>' +
+                        '</div>';
+                    lucide.createIcons();
+                    return;
+                }
+
+                container.innerHTML = '<div class="grid grid-cols-1 gap-4">' + anns.map(function (a) {
+                    var st = annStatus(a);
+                    var range = (a.start_date || a.end_date)
+                        ? '<span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i>' +
+                          esc(a.start_date || 'now') + ' to ' + esc(a.end_date || 'no end') + '</span>'
+                        : '';
+                    return '<div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-slate-800">' +
+                        '<div class="flex items-start justify-between gap-3">' +
+                            '<div class="flex-1">' +
+                                '<h3 class="text-sm font-bold text-slate-900 dark:text-white">' + esc(a.title) + '</h3>' +
+                                '<p class="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">' + br(a.message) + '</p>' +
+                            '</div>' +
+                            '<span class="text-[10px] font-semibold px-2 py-1 rounded-full border shrink-0 ' + STATUS_COLORS[st[1]] + '">' + st[0] + '</span>' +
+                        '</div>' +
+                        '<div class="flex items-center gap-4 mt-4 text-[10px] text-slate-500 dark:text-slate-400">' +
+                            '<span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i>' + fmt(a.created_at) + '</span>' +
+                            range +
+                        '</div>' +
+                    '</div>';
+                }).join('') + '</div>';
+                lucide.createIcons();
+            }
+
+            document.addEventListener('announcements:updated', function (e) {
+                render((e.detail && e.detail.all) || []);
+            });
+        })();
     </script>
 </body>
 </html>

@@ -319,3 +319,5 @@ $navItems = [
         }
     }
 </script>
+
+<script src="announcement_live.js" defer></script>

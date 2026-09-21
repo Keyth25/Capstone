@@ -309,49 +309,47 @@ $occupancy_wave_data = [12, 24, 38, 45, 52, $occupancy_rate];
                                 <h3 class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                                     System Bulletin
                                 </h3>
-                                <?php if (!empty($active_announcements)): ?>
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                        <?= count($active_announcements) ?> Active
-                                    </span>
-                                <?php endif; ?>
+                                <span id="announcementCountBadge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 <?= empty($active_announcements) ? 'hidden' : '' ?>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    <span id="announcementCountText"><?= count($active_announcements) ?> Active</span>
+                                </span>
                             </div>
 
-                            <div class="flex items-center gap-2">
-                                <?php if (!empty($active_announcements)): ?>
-                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium hidden sm:inline-block">Auto-dismisses in 1 min</span>
-                                    <button onclick="dismissAnnouncements()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition">
-                                        <i data-lucide="x" class="w-4 h-4"></i>
-                                    </button>
-                                <?php endif; ?>
+                            <div id="announcementControls" class="flex items-center gap-2 <?= empty($active_announcements) ? 'hidden' : '' ?>">
+                                <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium hidden sm:inline-block">Auto-dismisses in 1 min</span>
+                                <button onclick="dismissAnnouncements()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
                             </div>
                         </div>
 
-                        <?php if (empty($active_announcements)): ?>
-                            <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/60 flex items-center gap-3">
-                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i>
-                                <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">All clear! No active broadcast announcements at this moment.</p>
-                            </div>
-                        <?php else: ?>
-                            <div class="space-y-3">
-                                <?php foreach ($active_announcements as $a): ?>
-                                    <div class="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 shadow-sm backdrop-blur-md hover:border-cyan-500/30 transition duration-200">
-                                        <div class="flex items-center justify-between gap-2 mb-1">
-                                            <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                                <i data-lucide="bell" class="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400"></i>
-                                                <?= htmlspecialchars($a['title']) ?>
-                                            </h4>
-                                            <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700/60 shrink-0">
-                                                <?= date('M j, Y', strtotime($a['created_at'])) ?>
-                                            </span>
+                        <div id="announcementList">
+                            <?php if (empty($active_announcements)): ?>
+                                <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/60 flex items-center gap-3">
+                                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+                                    <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">All clear! No active broadcast announcements at this moment.</p>
+                                </div>
+                            <?php else: ?>
+                                <div class="space-y-3">
+                                    <?php foreach ($active_announcements as $a): ?>
+                                        <div class="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 shadow-sm backdrop-blur-md hover:border-cyan-500/30 transition duration-200">
+                                            <div class="flex items-center justify-between gap-2 mb-1">
+                                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                                    <i data-lucide="bell" class="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400"></i>
+                                                    <?= htmlspecialchars($a['title']) ?>
+                                                </h4>
+                                                <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700/60 shrink-0">
+                                                    <?= date('M j, Y', strtotime($a['created_at'])) ?>
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-5">
+                                                <?= nl2br(htmlspecialchars($a['message'])) ?>
+                                            </p>
                                         </div>
-                                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-5">
-                                            <?= nl2br(htmlspecialchars($a['message'])) ?>
-                                        </p>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -713,6 +711,8 @@ $occupancy_wave_data = [12, 24, 38, 45, 52, $occupancy_rate];
     </script>
 
     <script>
+        let annDismissTimer = null;
+
         function safeParse(str, fallback) {
             try { return JSON.parse(str); } catch (e) { return fallback; }
         }
@@ -749,13 +749,71 @@ $occupancy_wave_data = [12, 24, 38, 45, 52, $occupancy_rate];
                     if (!hasNew) {
                         card.classList.add('hidden');
                     } else {
-                        setTimeout(dismissAnnouncements, 60000);
+                        annDismissTimer = setTimeout(dismissAnnouncements, 60000);
                     }
                 } catch (e) {
-                    setTimeout(dismissAnnouncements, 60000);
+                    annDismissTimer = setTimeout(dismissAnnouncements, 60000);
                 }
             }
         })();
+
+        // Live-update the System Bulletin card when announcements change
+        document.addEventListener('announcements:updated', function (e) {
+            const anns = (e.detail && e.detail.active) || [];
+            const card = document.getElementById('announcementCard');
+            const list = document.getElementById('announcementList');
+            const badge = document.getElementById('announcementCountBadge');
+            const badgeText = document.getElementById('announcementCountText');
+            const controls = document.getElementById('announcementControls');
+            if (!card || !list) return;
+
+            const L = window.AnnouncementLive || {};
+            const esc = L.escapeHtml || function (s) { return String(s || ''); };
+            const br = L.nl2br || esc;
+            const fmt = L.formatDate || function (s) { return s || ''; };
+
+            card.dataset.ids = JSON.stringify(anns.map(function (a) { return a.id; }));
+
+            if (badge && badgeText) {
+                badgeText.textContent = anns.length + ' Active';
+                badge.classList.toggle('hidden', !anns.length);
+            }
+            if (controls) controls.classList.toggle('hidden', !anns.length);
+
+            if (!anns.length) {
+                list.innerHTML = '<div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800/60 flex items-center gap-3">' +
+                    '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i>' +
+                    '<p class="text-xs text-slate-600 dark:text-slate-400 font-medium">All clear! No active broadcast announcements at this moment.</p></div>';
+                card.classList.remove('hidden');
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            list.innerHTML = '<div class="space-y-3">' + anns.map(function (a) {
+                return '<div class="p-4 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 shadow-sm backdrop-blur-md hover:border-cyan-500/30 transition duration-200">' +
+                    '<div class="flex items-center justify-between gap-2 mb-1">' +
+                        '<h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">' +
+                            '<i data-lucide="bell" class="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400"></i>' + esc(a.title) +
+                        '</h4>' +
+                        '<span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700/60 shrink-0">' + fmt(a.created_at) + '</span>' +
+                    '</div>' +
+                    '<p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-5">' + br(a.message) + '</p>' +
+                '</div>';
+            }).join('') + '</div>';
+
+            let dismissed = safeParse(localStorage.getItem('dismissedAnnouncements'), []);
+            if (!Array.isArray(dismissed)) dismissed = [];
+            const hasNew = anns.some(function (a) { return dismissed.indexOf(String(a.id)) === -1; });
+            if (hasNew) {
+                card.classList.remove('hidden');
+                clearTimeout(annDismissTimer);
+                annDismissTimer = setTimeout(dismissAnnouncements, 60000);
+            } else {
+                card.classList.add('hidden');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        });
     </script>
     <div id="notificationDialog" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onclick="if (event.target === this) closeNotificationDialog()">
         <div class="glass-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-5 relative">
