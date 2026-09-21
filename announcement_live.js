@@ -7,7 +7,7 @@
 (function () {
     'use strict';
 
-    var POLL_INTERVAL = 10000;  // 10 seconds
+    var POLL_INTERVAL = 5000;   // 5 seconds
     var TOAST_DURATION = 15000; // 15 seconds
     var MAX_TOASTS = 3;
 
