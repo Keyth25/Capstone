@@ -496,7 +496,7 @@ try {
 $adminPlots = [];
 try {
     $stmt = $pdo->query("
-        SELECT p.*, COALESCE(s.section_name, (SELECT section_name FROM public.sections WHERE section_code = p.section_code LIMIT 1)) AS section_name, COALESCE(s.section_code, (SELECT section_code FROM public.sections WHERE section_code = p.section_code LIMIT 1)) AS section_section_code
+        SELECT p.*, COALESCE(s.section_name, (SELECT section_name FROM public.sections WHERE section_code = p.section_code LIMIT 1)) AS section_name, COALESCE(s.section_code, (SELECT section_code FROM public.sections WHERE section_code = p.section_code LIMIT 1)) AS section_section_code, COALESCE(s.section_type, (SELECT section_type FROM public.sections WHERE section_code = p.section_code LIMIT 1)) AS section_type
         FROM public.plots p
         LEFT JOIN public.sections s ON p.section_id = s.id
         ORDER BY p.created_at DESC
@@ -885,6 +885,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
                                 <i data-lucide="map-pin" class="w-4 h-4 text-cyan-500 dark:text-cyan-400"></i> <span id="map-layer-label">Interactive Map Layer</span>
+                                <button type="button" id="btn-clear-class-filter" onclick="clearClassMapFilter()" class="hidden items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[9px] font-bold normal-case tracking-normal text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 hover:border-cyan-500 transition-all"><i data-lucide="x" class="w-3 h-3"></i> Show all plots</button>
                             </span>
 
                             <button type="button" id="btn-toggle-3d" onclick="toggleMap3DView()" class="hidden px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500 hover:text-white transition-all text-[10px] font-bold items-center gap-1.5">
@@ -1345,6 +1346,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         let mapInitialized = false;
         let selectedPlotBtn = null;
         let currentHighlightedPlotLayer = null;
+        let activeClassFilter = null;
 
         const satelliteTileUrl = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
         const osmTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -2018,12 +2020,15 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
                 selectedPlotBtn.className = 'h-10 w-full rounded-lg text-[10px] leading-none break-words px-1 flex items-center justify-center bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold';
                 selectedPlotBtn = null;
             }
+            // Show every plot in this card's classification on the map and
+            // hide the rest (e.g. clicking GOLD leaves only gold plots).
+            applyClassMapFilter(plotClassOf(item));
+
             if (window.mapInstance && item.latitude && item.longitude) {
                 if (currentHighlightedPlotLayer) window.mapInstance.removeLayer(currentHighlightedPlotLayer);
                 currentHighlightedPlotLayer = L.circleMarker([parseFloat(item.latitude), parseFloat(item.longitude)], {
                     radius: 12, color: '#00ffff', fillColor: '#22d3ee', fillOpacity: 0.8, weight: 3
                 }).addTo(window.mapInstance);
-                window.mapInstance.flyTo([parseFloat(item.latitude), parseFloat(item.longitude)], 20, { animate: true, duration: 1.2 });
             }
         }
 
@@ -2167,6 +2172,37 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
             });
         }
 
+        // Restrict the map to a single recommendation classification
+        // (gold / premium / standard / apartment / mausoleum); pass null to
+        // restore every plot.
+        function applyClassMapFilter(cls) {
+            activeClassFilter = cls || null;
+            const label = document.getElementById('map-layer-label');
+            const clearBtn = document.getElementById('btn-clear-class-filter');
+
+            const plots = activeClassFilter
+                ? (adminPlotsData || []).filter(p => plotClassOf(p) === activeClassFilter)
+                : (adminPlotsData || []);
+            renderPlots(plots);
+
+            if (label) label.innerText = activeClassFilter ? `${CLASS_LABEL[activeClassFilter] || 'Recommended'} Plots` : 'Interactive Map Layer';
+            if (clearBtn) {
+                clearBtn.classList.toggle('hidden', !activeClassFilter);
+                clearBtn.classList.toggle('inline-flex', !!activeClassFilter);
+            }
+
+            if (window.mapInstance && window.plotsLayer && window.plotsLayer.getLayers().length) {
+                try {
+                    const bounds = L.featureGroup(window.plotsLayer.getLayers()).getBounds();
+                    window.mapInstance.flyToBounds(bounds, { padding: [50, 50], maxZoom: 19, duration: 1.0 });
+                } catch (e) {}
+            }
+        }
+
+        function clearClassMapFilter() {
+            applyClassMapFilter(null);
+        }
+
         function initMap() {
             const map = L.map('map').setView([14.5985, 120.9830], 18);
             window.mapInstance = map;
@@ -2262,6 +2298,13 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
             window.currentSection = layout;
             window.currentSectionPlots = [];
             window.plotGridButtons = {};
+
+            // Clicking a section takes over the map — drop any active
+            // recommendation-class filter and restore the default label.
+            activeClassFilter = null;
+            const clearFilterBtn = document.getElementById('btn-clear-class-filter');
+            if (clearFilterBtn) { clearFilterBtn.classList.add('hidden'); clearFilterBtn.classList.remove('inline-flex'); }
+            document.getElementById('map-layer-label').innerText = 'Interactive Map Layer';
 
             if ((layout.section_type || '').toLowerCase() === 'apartment') {
                 showApartment3DView();
@@ -2482,6 +2525,10 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         }
 
         async function loadRecommendations() {
+            // Changing preferences produces a new recommendation set — drop
+            // any classification filter a previous card click applied.
+            if (activeClassFilter) applyClassMapFilter(null);
+
             const section = document.getElementById('filter-section').value;
             const budgetRaw = parseFloat(document.getElementById('filter-budget').value);
             const budget = (isNaN(budgetRaw) || budgetRaw < 0) ? '' : budgetRaw;
