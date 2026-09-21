@@ -2480,6 +2480,10 @@ try {
             const prompt = document.getElementById('recommendations-prompt');
             const subtitle = document.getElementById('recommendations-subtitle');
 
+            // Warm up the entrance lookup so it runs in parallel with the
+            // recommendation fetch instead of after it.
+            getProximityContext();
+
             const res = await fetch(`reservation.php?action=recommend_plots&section_code=${encodeURIComponent(section)}&max_budget=${encodeURIComponent(budget)}&plot_type=${encodeURIComponent(ptype)}`).then(r => r.json());
 
             if (res.status === 'success' && res.data.length > 0) {
@@ -2487,7 +2491,9 @@ try {
                     it._adminTags = parseAdminTags(it.recommendations);
                     it._pitch = plotPitch(it);
                 });
-                await annotateProximity(res.data);
+                // Render right away — proximity lookups finish in the background
+                // and only refine ordering, badges and the details panel.
+                const proximityDone = annotateProximity(res.data);
                 computeMatchScores(res.data);
                 // Showcase order is curated (Gold → Premium → Standard → Apartment →
                 // Mausoleum); budget mode is already ordered lowest → budget →
@@ -2551,9 +2557,27 @@ try {
                         </div>
                     `;
                     if (!isPlaceholder) card.onclick = () => selectRecommendedPlot(item, card);
+                    item._cardEl = card;
                     list.appendChild(card);
                 });
                 if (window.lucide) lucide.createIcons();
+
+                // When proximity metrics arrive, refresh match scores/badges and
+                // re-order the cards — skipped once the user has picked a plot.
+                proximityDone.then(() => {
+                    computeMatchScores(res.data);
+                    assignRecBadges(res.data, res.showcase);
+                    if (res.showcase || res.budget != null || document.getElementById('input-plot-number').value) return;
+                    res.data.sort((a, b) => b._recMatch - a._recMatch);
+                    const topIdx = res.data.findIndex(it => !it.class_placeholder);
+                    res.data.forEach((item, i) => {
+                        if (!item._cardEl) return;
+                        list.appendChild(item._cardEl);
+                        item._cardEl.className = `${item.class_placeholder ? REC_CARD_BASE.replace('cursor-pointer', 'cursor-default') : REC_CARD_BASE} ${i === topIdx ? 'border-cyan-400 dark:border-cyan-400 bg-cyan-500/5 ring-1 ring-cyan-400/40' : (item.over_budget ? 'border-amber-300/70 dark:border-amber-500/30 bg-white dark:bg-[#0d1a2f] hover:border-amber-400' : REC_CARD_IDLE)}`;
+                        const b = item._cardEl.querySelector('.rec-select-btn');
+                        if (b && !item.class_placeholder) b.className = i === topIdx ? REC_BTN_ACTIVE : REC_BTN_IDLE;
+                    });
+                });
             } else {
                 container.classList.add('hidden');
                 list.innerHTML = '';
