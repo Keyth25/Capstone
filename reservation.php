@@ -2862,7 +2862,20 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
             animate();
         }
 
-        document.getElementById('booking-form').onsubmit = function(e) {
+        const bookingForm = document.getElementById('booking-form');
+
+        // If a required field fails validation while its stage is hidden, the
+        // browser can't focus it and the submit appears to do nothing. Reveal
+        // the stage containing the invalid control so the message is shown.
+        bookingForm.addEventListener('invalid', function(e) {
+            const stageEl = e.target.closest('.stage-section');
+            if (stageEl && stageEl.classList.contains('hidden')) {
+                const stageNum = parseInt(stageEl.id.replace('stage-', ''), 10);
+                if (stageNum) goToStage(stageNum);
+            }
+        }, true);
+
+        bookingForm.onsubmit = function(e) {
             e.preventDefault();
             const selectedOpt = document.querySelector('input[name="payment_option"]:checked')?.value || 'Full Payment';
             if (selectedOpt === 'Down Payment') {
@@ -2878,6 +2891,14 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
                     return;
                 }
             }
+
+            const submitBtn = bookingForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.dataset.origText = submitBtn.innerText;
+                submitBtn.innerText = 'Submitting...';
+            }
+
             const formData = new FormData(this);
             formData.append('action', 'reserve_plot');
 
@@ -2888,7 +2909,16 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
                         document.getElementById('modal-ref-id').innerText = data.reservation_id;
                         document.getElementById('success-modal').classList.remove('hidden');
                     } else {
-                        alert(data.message);
+                        alert(data.message || 'Reservation failed. Please try again.');
+                    }
+                })
+                .catch(() => {
+                    alert('Could not submit your reservation. Please check your connection and try again.');
+                })
+                .finally(() => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = submitBtn.dataset.origText || 'Submit Reservation';
                     }
                 });
         };
