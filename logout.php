@@ -12,6 +12,5 @@ setcookie(session_name(), '', [
 header('Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
-header('Clear-Site-Data: "cache", "cookies"');
 header('Location: landing.php');
 exit;
