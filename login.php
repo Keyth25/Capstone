@@ -174,6 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <html lang="en" style="background:transparent">
                     <body style="background:transparent">
                         <script>
+                            try { sessionStorage.setItem('cn_auth', <?= json_encode(session_id()) ?>); } catch (e) {}
                             if (window.parent) {
                                 window.parent.postMessage({type: 'cemeterynav-redirect', url: <?= json_encode($dashboard) ?>}, '*');
                             }
@@ -188,6 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <html lang="en">
                 <body>
                     <script>
+                        try { sessionStorage.setItem('cn_auth', <?= json_encode(session_id()) ?>); } catch (e) {}
                         window.location.replace(<?= json_encode($dashboard) ?>);
                     </script>
                 </body>

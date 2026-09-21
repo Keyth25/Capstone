@@ -38,6 +38,7 @@ try {
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+    <?php require __DIR__ . '/includes/tab_guard.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Payment History - Mount Matutum Memorial Park</title>

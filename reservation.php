@@ -519,6 +519,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+    <?php require __DIR__ . '/includes/tab_guard.php'; ?>
     <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">

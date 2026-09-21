@@ -58,6 +58,7 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Farewells and Sympathy - Cemetery Navigator</title>
+    <?php require __DIR__ . '/includes/tab_guard.php'; ?>
 
     <!-- Google Fonts & Font Awesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -817,6 +818,7 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
 
     window.addEventListener('message', (e) => {
         if (e.data && e.data.type === 'cemeterynav-redirect' && e.data.url) {
+            try { sessionStorage.setItem('cn_auth', <?= json_encode(session_id()) ?>); } catch (err) {}
             window.location.href = e.data.url;
         }
     });

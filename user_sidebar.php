@@ -1,6 +1,7 @@
 <?php
 // user_sidebar.php
 $currentPage = basename($_SERVER['PHP_SELF']);
+require __DIR__ . '/includes/tab_guard.php';
 
 $navItems = [
     ['label' => 'Dashboard',           'file' => 'user_dashboard.php',    'icon' => 'fa-chart-pie'],

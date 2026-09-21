@@ -1,6 +1,7 @@
 <?php
 // sidebar.php - Admin sidebar
 $currentPage = basename($_SERVER['PHP_SELF']);
+require __DIR__ . '/includes/tab_guard.php';
 ?>
 <?php if (function_exists('theme_head_script')) theme_head_script(); ?>
 <aside id="sidebar" class="absolute lg:relative z-20 w-80 lg:w-96 h-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-slate-800/50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0 shrink-0 backdrop-blur-xl">
