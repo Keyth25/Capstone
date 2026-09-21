@@ -1359,6 +1359,10 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
 
         let wizardHistoryPushed = false;
 
+        function wizardVisible() {
+            return !document.getElementById('wizard-container').classList.contains('hidden');
+        }
+
         function goToLanding() {
             document.getElementById('step-landing').classList.remove('hidden');
             document.getElementById('wizard-container').classList.add('hidden');
@@ -1368,13 +1372,16 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         // Header Back: while inside the wizard, return to the purpose selection
         // screen first; on the selection screen it proceeds to the dashboard.
         function handleHeaderBack(e) {
-            if (!document.getElementById('wizard-container').classList.contains('hidden')) {
-                e.preventDefault();
-                if (wizardHistoryPushed) {
-                    history.back();
-                } else {
-                    goToLanding();
-                }
+            if (!wizardVisible()) return;
+            e.preventDefault();
+            if (wizardHistoryPushed) {
+                wizardHistoryPushed = false;
+                history.back();
+                // history.back() is a silent no-op when the wizard entry is the
+                // root of a restored stack — swap views directly if it didn't pop.
+                setTimeout(() => { if (wizardVisible()) goToLanding(); }, 400);
+            } else {
+                goToLanding();
             }
         }
 
@@ -1382,7 +1389,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         // the page, since the wizard is a pushed history state.
         window.addEventListener('popstate', () => {
             wizardHistoryPushed = !!(history.state && history.state.resWizard);
-            if (!document.getElementById('wizard-container').classList.contains('hidden')) {
+            if (wizardVisible()) {
                 goToLanding();
             } else if (wizardHistoryPushed) {
                 // Stale wizard entry left under the selection screen by a
@@ -1396,6 +1403,11 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         // so re-sync the flag and re-show the landing in case a restored
         // snapshot kept the wizard visible.
         window.addEventListener('pageshow', () => {
+            if (wizardVisible() && !(history.state && history.state.resWizard)) {
+                // Restored snapshot with the wizard open on a plain entry —
+                // mark it so Back still has something to pop.
+                history.pushState({ resWizard: true }, '');
+            }
             goToLanding();
             wizardHistoryPushed = !!(history.state && history.state.resWizard);
         });
