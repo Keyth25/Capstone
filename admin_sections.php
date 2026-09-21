@@ -129,7 +129,7 @@ try {
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
     <!-- HEADER BAR -->
-    <header class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between z-30 shrink-0">
+    <header class="sticky top-0 bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between z-30 shrink-0">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 bg-sky-600 rounded flex items-center justify-center font-black text-white text-base">
                 <i class="fa-solid fa-layer-group"></i>
