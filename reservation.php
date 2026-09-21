@@ -103,13 +103,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_plots') {
 }
 
 // --- HANDLE AJAX REQUEST FOR RECOMMENDATIONS ---
-if (isset($_GET['action']) && $_GET['action'] === 'recommend_plots') {
-    header('Content-Type: application/json');
-    
-    $max_budget = isset($_GET['max_budget']) && $_GET['max_budget'] !== '' ? (float)$_GET['max_budget'] : null;
-    $preferred_section = $_GET['section_code'] ?? null;
-    $preferred_type = $_GET['plot_type'] ?? null;
-    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 6;
+// Builds the recommendation payload — shared by the AJAX endpoint and the
+// page-load preload so the default showcase needs no extra round trip.
+function get_recommended_plots($pdo, $max_budget, $preferred_section, $preferred_type, $limit = 6) {
     // Tier showcase applies whenever no budget cap is set — scoped to the chosen
     // section / plot type when the user has picked preferences.
     $is_showcase = $max_budget === null;
@@ -196,8 +192,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'recommend_plots') {
             }
             $recommendations = array_slice($recommendations, 0, $limit);
 
-            echo json_encode(['status' => 'success', 'data' => $recommendations, 'showcase' => true]);
-            exit;
+            return ['status' => 'success', 'data' => $recommendations, 'showcase' => true];
         }
 
         $query = "
@@ -281,10 +276,22 @@ if (isset($_GET['action']) && $_GET['action'] === 'recommend_plots') {
         }
         unset($rec);
 
-        echo json_encode(['status' => 'success', 'data' => $recommendations, 'budget' => $max_budget]);
+        return ['status' => 'success', 'data' => $recommendations, 'budget' => $max_budget];
     } catch (PDOException $e) {
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        return ['status' => 'error', 'message' => $e->getMessage()];
     }
+}
+
+if (isset($_GET['action']) && $_GET['action'] === 'recommend_plots') {
+    header('Content-Type: application/json');
+    $max_budget = isset($_GET['max_budget']) && $_GET['max_budget'] !== '' ? (float)$_GET['max_budget'] : null;
+    echo json_encode(get_recommended_plots(
+        $pdo,
+        $max_budget,
+        $_GET['section_code'] ?? null,
+        $_GET['plot_type'] ?? null,
+        isset($_GET['limit']) ? (int)$_GET['limit'] : 6
+    ));
     exit;
 }
 
@@ -504,6 +511,10 @@ try {
 } catch (PDOException $e) {
     $adminPlots = [];
 }
+
+// Preload the default recommendation showcase so the cards render instantly
+// without waiting for a second request.
+$preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
 ?>
 <!DOCTYPE html>
 <html lang="en" class="dark">
@@ -1339,6 +1350,7 @@ try {
         const osmTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
         const layoutsData = <?= json_encode($layouts) ?>;
+        let _preloadedRecs = <?= json_encode($preloaded_recs) ?>;
         const adminPlotsData = <?= json_encode($adminPlots) ?>;
 
         function goToLanding() {
@@ -2484,7 +2496,12 @@ try {
             // recommendation fetch instead of after it.
             getProximityContext();
 
-            const res = await fetch(`reservation.php?action=recommend_plots&section_code=${encodeURIComponent(section)}&max_budget=${encodeURIComponent(budget)}&plot_type=${encodeURIComponent(ptype)}`).then(r => r.json());
+            // Use the server-preloaded showcase for the default view so the
+            // cards render instantly; any filter change fetches fresh data.
+            const res = (_preloadedRecs && !section && budget === '' && !ptype)
+                ? _preloadedRecs
+                : await fetch(`reservation.php?action=recommend_plots&section_code=${encodeURIComponent(section)}&max_budget=${encodeURIComponent(budget)}&plot_type=${encodeURIComponent(ptype)}`).then(r => r.json());
+            _preloadedRecs = null;
 
             if (res.status === 'success' && res.data.length > 0) {
                 res.data.forEach(it => {
