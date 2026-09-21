@@ -18,6 +18,16 @@ if (!ensure_public_user($pdo, $staff_id)) {
     exit();
 }
 
+// Fetch the staff member's assigned job role (set by the admin)
+$staff_job_role = null;
+try {
+    $role_stmt = $pdo->prepare("SELECT job_role FROM public.profiles WHERE id::text = ?");
+    $role_stmt->execute([$staff_id]);
+    $staff_job_role = $role_stmt->fetchColumn() ?: null;
+} catch (PDOException $e) {
+    $staff_job_role = null;
+}
+
 $message = '';
 $error = '';
 
@@ -299,6 +309,9 @@ try {
                 <div class="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
                     <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
                     <span class="text-xs font-medium text-slate-300">Staff: <strong class="text-white"><?= htmlspecialchars($_SESSION['name'] ?? 'Staff') ?></strong></span>
+                    <?php if ($staff_job_role): ?>
+                        <span class="text-[10px] font-semibold bg-cyan-950 text-cyan-400 border border-cyan-800/60 px-2 py-0.5 rounded-full"><?= htmlspecialchars($staff_job_role) ?></span>
+                    <?php endif; ?>
                 </div>
                 <button id="themeToggle" type="button" onclick="if(typeof toggleTheme==='function'){toggleTheme(); const i=this.querySelector('i'); i.className=document.documentElement.classList.contains('dark')?'fa-solid fa-moon text-cyan-400 text-sm':'fa-solid fa-sun text-amber-400 text-sm';}" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition" title="Toggle Theme">
                     <i class="fa-solid fa-moon text-sm"></i>

@@ -116,8 +116,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $auth_user = $auth_data['user'] ?? [];
             $role = $auth_user['user_metadata']['role'] ?? 'user';
-            $stmt = $pdo->prepare("SELECT first_name, last_name, email FROM public.profiles WHERE id = ?");
-            $stmt->execute([$user_id]);
+            try {
+                $stmt = $pdo->prepare("SELECT first_name, last_name, email, job_role FROM public.profiles WHERE id = ?");
+                $stmt->execute([$user_id]);
+            } catch (PDOException $e) {
+                // job_role column may not exist yet
+                $stmt = $pdo->prepare("SELECT first_name, last_name, email, NULL AS job_role FROM public.profiles WHERE id = ?");
+                $stmt->execute([$user_id]);
+            }
             $profile = $stmt->fetch();
 
             if ($profile) {
@@ -125,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['role'] = $role;
                 $_SESSION['name'] = trim(($profile['first_name'] ?? '') . ' ' . ($profile['last_name'] ?? '')) ?: 'User';
                 $_SESSION['email'] = $profile['email'];
+                $_SESSION['job_role'] = $profile['job_role'] ?? null;
 
                 ensure_public_user($pdo, $user_id);
 

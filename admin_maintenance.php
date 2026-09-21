@@ -625,19 +625,36 @@ foreach ($requests as $r) {
 // Fetch Available Staff (auth.users staff + legacy public.users staff)
 $staff_list = [];
 try {
-    $staff_stmt = $pdo->query("
-        SELECT s.id, s.name FROM (
-            SELECT au.id, COALESCE(NULLIF(TRIM(CONCAT_WS(' ', p.first_name, p.last_name)), ''), NULLIF(au.raw_user_meta_data->>'full_name', ''), u.name, au.email) AS name
-            FROM auth.users au
-            LEFT JOIN public.profiles p ON p.id = au.id
-            LEFT JOIN public.users u ON u.id = au.id
-            WHERE au.raw_user_meta_data->>'role' = 'staff'
-            UNION
-            SELECT u2.id, u2.name FROM public.users u2 WHERE u2.role = 'staff'
-        ) s
-        ORDER BY s.name ASC
-    ");
-    $staff_list = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $staff_stmt = $pdo->query("
+            SELECT s.id, s.name, s.job_role FROM (
+                SELECT au.id, COALESCE(NULLIF(TRIM(CONCAT_WS(' ', p.first_name, p.last_name)), ''), NULLIF(au.raw_user_meta_data->>'full_name', ''), u.name, au.email) AS name, p.job_role
+                FROM auth.users au
+                LEFT JOIN public.profiles p ON p.id = au.id
+                LEFT JOIN public.users u ON u.id = au.id
+                WHERE au.raw_user_meta_data->>'role' = 'staff'
+                UNION
+                SELECT u2.id, u2.name, NULL AS job_role FROM public.users u2 WHERE u2.role = 'staff'
+            ) s
+            ORDER BY s.name ASC
+        ");
+        $staff_list = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        // job_role column may not exist yet — fall back to the plain staff list
+        $staff_stmt = $pdo->query("
+            SELECT s.id, s.name, NULL AS job_role FROM (
+                SELECT au.id, COALESCE(NULLIF(TRIM(CONCAT_WS(' ', p.first_name, p.last_name)), ''), NULLIF(au.raw_user_meta_data->>'full_name', ''), u.name, au.email) AS name
+                FROM auth.users au
+                LEFT JOIN public.profiles p ON p.id = au.id
+                LEFT JOIN public.users u ON u.id = au.id
+                WHERE au.raw_user_meta_data->>'role' = 'staff'
+                UNION
+                SELECT u2.id, u2.name FROM public.users u2 WHERE u2.role = 'staff'
+            ) s
+            ORDER BY s.name ASC
+        ");
+        $staff_list = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 } catch (PDOException $e) {
     $staff_list = [];
 }
@@ -1083,7 +1100,7 @@ try {
                     <select name="staff_id" required class="mr-input w-full rounded-xl p-2.5 text-xs">
                         <option value="">-- Select Staff --</option>
                         <?php foreach ($staff_list as $staff): ?>
-                            <option value="<?= htmlspecialchars($staff['id']) ?>"><?= htmlspecialchars($staff['name']) ?></option>
+                            <option value="<?= htmlspecialchars($staff['id']) ?>"><?= htmlspecialchars($staff['name']) ?><?= !empty($staff['job_role']) ? ' — ' . htmlspecialchars($staff['job_role']) : '' ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
