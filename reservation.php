@@ -1347,6 +1347,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         let selectedPlotBtn = null;
         let currentHighlightedPlotLayer = null;
         let activeClassFilter = null;
+        let selectedRecCard = null;
 
         const satelliteTileUrl = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
         const osmTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -1970,6 +1971,7 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
         }
 
         function clearRecCardSelection() {
+            selectedRecCard = null;
             document.querySelectorAll('#recommendations-list .rec-card').forEach(c => {
                 c.className = `${REC_CARD_BASE} ${REC_CARD_IDLE}`;
                 const b = c.querySelector('.rec-select-btn');
@@ -1977,8 +1979,29 @@ $preloaded_recs = get_recommended_plots($pdo, null, null, null, 6);
             });
         }
 
-        function selectRecommendedPlot(item, card) {
+        // Re-clicking the active card toggles back to the initial state:
+        // every plot visible on the map again and nothing selected.
+        function deselectRecommendedPlot() {
             clearRecCardSelection();
+            document.getElementById('input-plot-number').value = '';
+            document.getElementById('input-plot-id').value = '';
+            document.getElementById('btn-lock-plot').disabled = true;
+            window.selectedRecMeta = null;
+            if (currentHighlightedPlotLayer && window.mapInstance) {
+                window.mapInstance.removeLayer(currentHighlightedPlotLayer);
+                currentHighlightedPlotLayer = null;
+            }
+            updateSelectedPlotPanel();
+            applyClassMapFilter(null);
+        }
+
+        function selectRecommendedPlot(item, card) {
+            if (card === selectedRecCard) {
+                deselectRecommendedPlot();
+                return;
+            }
+            clearRecCardSelection();
+            selectedRecCard = card;
             card.className = `${REC_CARD_BASE} border-cyan-400 dark:border-cyan-400 bg-cyan-500/5 dark:bg-cyan-500/5 ring-1 ring-cyan-400/40`;
             const btn = card.querySelector('.rec-select-btn');
             if (btn) btn.className = REC_BTN_ACTIVE;
