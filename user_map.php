@@ -331,7 +331,7 @@ try {
             }
         }
 
-        const map = L.map('userMap', { zoomControl: false }).setView([14.5985, 120.9830], 18);
+        const map = L.map('userMap', { zoomControl: false }).setView([6.2201, 125.0647], 18);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         const satelliteTile = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxNativeZoom: 20, maxZoom: 22 }).addTo(map);
@@ -351,10 +351,12 @@ try {
 
         const layoutLayerGroup = L.featureGroup().addTo(map);
         const dbPerimeter = <?= json_encode($main_perimeter) ?>;
+        let perimeterBounds = null;
         if (dbPerimeter && dbPerimeter.geojson) {
             try {
                 let perimGeoJson = typeof dbPerimeter.geojson === 'string' ? JSON.parse(dbPerimeter.geojson) : dbPerimeter.geojson;
-                L.geoJSON(perimGeoJson, { style: { color: dbPerimeter.color || '#06b6d4', weight: 2, fill: false } }).addTo(layoutLayerGroup);
+                const perimeterLayer = L.geoJSON(perimGeoJson, { style: { color: dbPerimeter.color || '#06b6d4', weight: 2, fill: false } }).addTo(layoutLayerGroup);
+                perimeterBounds = perimeterLayer.getBounds();
             } catch (e) {}
         }
 
@@ -502,10 +504,20 @@ try {
         });
 
         const allMapFeatures = L.featureGroup([layoutLayerGroup, graveMarkerGroup]);
-        if (allMapFeatures.getLayers().length > 0) map.fitBounds(allMapFeatures.getBounds(), { padding: [40, 40] });
+
+        // The cemetery perimeter is the map's point of center: it defines the
+        // home view on load and for the recenter button. Marker bounds are only
+        // a fallback for when no boundary has been drawn yet.
+        function cemeteryHomeBounds() {
+            if (perimeterBounds && perimeterBounds.isValid()) return perimeterBounds;
+            return allMapFeatures.getLayers().length > 0 ? allMapFeatures.getBounds() : null;
+        }
+        const homeBounds = cemeteryHomeBounds();
+        if (homeBounds) map.fitBounds(homeBounds, { padding: [40, 40] });
 
         function resetUserMapView() {
-            if (allMapFeatures.getLayers().length > 0) map.fitBounds(allMapFeatures.getBounds(), { padding: [40, 40] });
+            const bounds = cemeteryHomeBounds();
+            if (bounds) map.fitBounds(bounds, { padding: [40, 40] });
         }
 
         // LIVE SEARCH SUGGESTIONS
@@ -647,7 +659,6 @@ try {
         let routeRequestId = 0;
         let lastRouteRemaining = null;
         let passiveWatchId = null;
-        let passiveCentered = false;
         let userMarkerAnim = null;
 
         const ARRIVED_THRESHOLD = 30;   // meters
@@ -663,7 +674,6 @@ try {
         // High-accuracy options for the always-on "where am I" marker — fresh
         // fixes keep the dot moving in real time even outside navigation.
         const GEO_PASSIVE = { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 };
-        const PASSIVE_RECENTER_RANGE = 2000; // only auto-center on the user if this close to the mapped area (m)
 
         // Facebook/Messenger and similar in-app browsers frequently delay or
         // block GPS fixes — warn the user to open the page in a real browser.
@@ -899,20 +909,16 @@ try {
 
         // PASSIVE LOCATION TRACKING
         // Keeps the user's dot on the map and moving even when they are not
-        // navigating. While navigation is active the high-accuracy watch in
-        // startWatching() takes over and this one is paused to save battery.
+        // navigating. It never moves the camera — until the user starts
+        // navigation or pans the map themselves, the point of center stays on
+        // the cemetery boundary. While navigation is active the high-accuracy
+        // watch in startWatching() takes over and this one is paused to save
+        // battery.
         function startPassiveTracking() {
             if (passiveWatchId !== null || !('geolocation' in navigator) || !window.isSecureContext) return;
             passiveWatchId = navigator.geolocation.watchPosition(position => {
                 if (activePlot) return;
                 updateUserMarker(position);
-                if (!passiveCentered) {
-                    passiveCentered = true;
-                    const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
-                    if (userLatLng.distanceTo(map.getCenter()) <= PASSIVE_RECENTER_RANGE) {
-                        map.setView(userLatLng, Math.max(map.getZoom(), 18), { animate: true });
-                    }
-                }
             }, () => {}, GEO_PASSIVE);
         }
 
