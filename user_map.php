@@ -281,6 +281,14 @@ try {
                     <i data-lucide="locate-fixed" class="w-4 h-4"></i>
                 </button>
             </div>
+
+            <!-- NAVIGATION STATUS & CONTROLS -->
+            <div class="absolute z-[1000] bottom-[max(4.75rem,calc(env(safe-area-inset-bottom)+4rem))] left-1/2 -translate-x-1/2 sm:bottom-auto sm:left-auto sm:translate-x-0 sm:top-[4.25rem] sm:right-4 flex flex-col items-center sm:items-end gap-2 pointer-events-none">
+                <div id="navStatus" class="hidden pointer-events-auto glass-panel border border-slate-200/80 dark:border-slate-800 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-lg max-w-[260px] text-center sm:text-right"></div>
+                <button id="stopNavBtn" type="button" onclick="stopNavigation()" class="hidden pointer-events-auto px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold shadow-lg shadow-rose-600/30 flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-stop text-[10px]"></i> End Navigation
+                </button>
+            </div>
         </main>
     </div>
 
@@ -573,7 +581,16 @@ try {
         }
 
         // NAVIGATION ENGINE
-        let navigationLine = null, userLocationMarker = null, destinationMarker = null;
+        let navigationLine = null, userLocationMarker = null, userAccuracyCircle = null, destinationMarker = null;
+        let locationWatchId = null;
+        let activePlot = null;
+        let retriedLowAccuracy = false;
+
+        const ARRIVED_THRESHOLD = 30;   // meters
+        const MAX_VOICE_RANGE = 1000000;
+        const GEO_HIGH_ACCURACY = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+        const GEO_FALLBACK = { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 };
+        const GEO_WATCH = { enableHighAccuracy: true, timeout: 30000, maximumAge: 5000 };
 
         // VOICE GUIDANCE (Web Speech API)
         function speakGuidance(text) {
@@ -607,91 +624,203 @@ try {
             return `${meters} meter${meters === 1 ? '' : 's'}`;
         }
 
-        function navigateToPlotWrapper(lat, lng, name, plotCode, dod) {
-            map.flyTo([lat, lng], 19, { animate: true });
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const userLat = position.coords.latitude, userLng = position.coords.longitude;
-                    if (userLocationMarker) map.removeLayer(userLocationMarker);
-                    userLocationMarker = L.circleMarker([userLat, userLng], { radius: 8, fillColor: '#06b6d4', color: '#ffffff', weight: 3, fillOpacity: 1 }).addTo(map);
+        function setNavStatus(text, isError = false) {
+            const el = document.getElementById('navStatus');
+            if (!el) return;
+            if (!text) { el.classList.add('hidden'); return; }
+            el.textContent = text;
+            el.className = 'pointer-events-auto glass-panel border rounded-xl px-3 py-2 text-[11px] font-bold shadow-lg max-w-[260px] text-center sm:text-right ' +
+                (isError ? 'border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400'
+                         : 'border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200');
+        }
 
-                    // Road routing via OSRM, but the drawn path always ends exactly at the plot
-                    if (navigationLine) map.removeLayer(navigationLine);
-                    if (destinationMarker) map.removeLayer(destinationMarker);
+        function updateUserMarker(position) {
+            const ll = [position.coords.latitude, position.coords.longitude];
+            if (userLocationMarker) map.removeLayer(userLocationMarker);
+            if (userAccuracyCircle) map.removeLayer(userAccuracyCircle);
+            userAccuracyCircle = L.circle(ll, {
+                radius: Math.min(position.coords.accuracy || 0, 200),
+                color: '#06b6d4', weight: 1, opacity: 0.5, fillColor: '#06b6d4', fillOpacity: 0.12
+            }).addTo(map);
+            userLocationMarker = L.circleMarker(ll, {
+                radius: 8, fillColor: '#06b6d4', color: '#ffffff', weight: 3, fillOpacity: 1
+            }).addTo(map);
+        }
 
-                    const userLatLng = L.latLng(userLat, userLng);
-                    const plotLatLng = L.latLng(lat, lng);
+        function stopNavigation(announce = true, keepMarkers = false) {
+            if (locationWatchId !== null) {
+                navigator.geolocation.clearWatch(locationWatchId);
+                locationWatchId = null;
+            }
+            activePlot = null;
+            if (!keepMarkers) {
+                if (navigationLine) { map.removeLayer(navigationLine); navigationLine = null; }
+                if (userLocationMarker) { map.removeLayer(userLocationMarker); userLocationMarker = null; }
+                if (userAccuracyCircle) { map.removeLayer(userAccuracyCircle); userAccuracyCircle = null; }
+                if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
+            }
+            const btn = document.getElementById('stopNavBtn');
+            if (btn) btn.classList.add('hidden');
+            setNavStatus(null);
+            if (announce) speakGuidance('Navigation ended.');
+        }
 
-                    destinationMarker = L.circleMarker(plotLatLng, {
-                        radius: 10, fillColor: '#10b981', color: '#ffffff', weight: 3, fillOpacity: 1
-                    }).addTo(map);
+        function startWatching() {
+            if (locationWatchId !== null) navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = navigator.geolocation.watchPosition(position => {
+                if (!activePlot) return;
+                updateUserMarker(position);
+                const dist = L.latLng(position.coords.latitude, position.coords.longitude)
+                    .distanceTo(L.latLng(activePlot.lat, activePlot.lng));
+                if (dist <= ARRIVED_THRESHOLD) {
+                    const arrivedMsg = `You have arrived at ${activePlot.name}, plot ${activePlot.plotCode}.`;
+                    const label = activePlot.plotCode;
+                    stopNavigation(false, true);
+                    setNavStatus(`Arrived at plot ${label}.`);
+                    speakGuidance(arrivedMsg);
+                    return;
+                }
+                setNavStatus(`${formatDistance(Math.max(0, Math.round(dist)))} to plot ${activePlot.plotCode} — follow the highlighted path.`);
+            }, err => {
+                console.warn('watchPosition error:', err);
+            }, GEO_WATCH);
+        }
 
-                    const straightDist = userLatLng.distanceTo(plotLatLng);
-                    const MAX_VOICE_RANGE = 1000000;
-                    const ARRIVED_THRESHOLD = 30;
-
-                    if (straightDist <= ARRIVED_THRESHOLD) {
-                        speakGuidance(`You have already arrived at ${name}, plot ${plotCode}.`);
+        function drawRouteToPlot(userLatLng, plotLatLng, straightDist) {
+            const plot = activePlot;
+            const router = L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' });
+            router.route(
+                [L.Routing.waypoint(userLatLng), L.Routing.waypoint(plotLatLng)],
+                (err, routes) => {
+                    if (plot !== activePlot) return;
+                    if (err || !routes || !routes.length) {
+                        // Fallback: straight walking path if the road route fails
+                        navigationLine = L.polyline([userLatLng, plotLatLng], {
+                            color: '#06b6d4', weight: 5, opacity: 0.85, dashArray: '10, 10'
+                        }).addTo(map);
+                        map.fitBounds(L.latLngBounds([userLatLng, plotLatLng]), { padding: [60, 60] });
+                        if (straightDist <= MAX_VOICE_RANGE) {
+                            const fallbackDist = formatDistance(Math.round(straightDist));
+                            speakGuidance(`Navigating to ${plot.name}, plot ${plot.plotCode}. The grave is approximately ${fallbackDist} away. Please follow the highlighted path on the map.`);
+                        }
                         return;
                     }
 
-                    const router = L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' });
-                    router.route(
-                        [L.Routing.waypoint(userLatLng), L.Routing.waypoint(plotLatLng)],
-                        (err, routes) => {
-                            if (err || !routes || !routes.length) {
-                                // Fallback: straight walking path if the road route fails
-                                navigationLine = L.polyline([userLatLng, plotLatLng], {
-                                    color: '#06b6d4', weight: 5, opacity: 0.85, dashArray: '10, 10'
-                                }).addTo(map);
-                                map.fitBounds(L.latLngBounds([userLatLng, plotLatLng]), { padding: [60, 60] });
-                                if (straightDist <= MAX_VOICE_RANGE) {
-                                    const fallbackDist = formatDistance(Math.round(straightDist));
-                                    speakGuidance(`Navigating to ${name}, plot ${plotCode}. The grave is approximately ${fallbackDist} away. Please follow the highlighted path on the map.`);
-                                }
-                                return;
-                            }
+                    const route = routes[0];
+                    // Trim the road geometry at the point closest to the plot, then
+                    // connect straight to the exact grave location. This prevents the
+                    // path from overshooting down the road when OSRM snaps the
+                    // destination to a street point past the cemetery entrance.
+                    const coords = route.coordinates;
+                    let closestIdx = coords.length - 1;
+                    let closestDist = Infinity;
+                    coords.forEach((c, i) => {
+                        const d = plotLatLng.distanceTo(L.latLng(c.lat, c.lng));
+                        if (d < closestDist) { closestDist = d; closestIdx = i; }
+                    });
+                    const pathCoords = coords.slice(0, closestIdx + 1).map(c => L.latLng(c.lat, c.lng));
+                    pathCoords.push(plotLatLng);
 
-                            const route = routes[0];
-                            // Trim the road geometry at the point closest to the plot, then
-                            // connect straight to the exact grave location. This prevents the
-                            // path from overshooting down the road when OSRM snaps the
-                            // destination to a street point past the cemetery entrance.
-                            const coords = route.coordinates;
-                            let closestIdx = coords.length - 1;
-                            let closestDist = Infinity;
-                            coords.forEach((c, i) => {
-                                const d = plotLatLng.distanceTo(L.latLng(c.lat, c.lng));
-                                if (d < closestDist) { closestDist = d; closestIdx = i; }
-                            });
-                            const pathCoords = coords.slice(0, closestIdx + 1).map(c => L.latLng(c.lat, c.lng));
-                            pathCoords.push(plotLatLng);
+                    navigationLine = L.polyline(pathCoords, {
+                        color: '#06b6d4', weight: 5, opacity: 0.85
+                    }).addTo(map);
 
-                            navigationLine = L.polyline(pathCoords, {
-                                color: '#06b6d4', weight: 5, opacity: 0.85
-                            }).addTo(map);
+                    map.fitBounds(navigationLine.getBounds(), { padding: [60, 60] });
 
-                            map.fitBounds(navigationLine.getBounds(), { padding: [60, 60] });
+                    if (straightDist > MAX_VOICE_RANGE) {
+                        return;
+                    }
 
-                            if (straightDist > MAX_VOICE_RANGE) {
-                                return;
-                            }
+                    const distMeters = Math.round(route.summary.totalDistance);
+                    const formattedDist = formatDistance(distMeters);
+                    const turns = (route.instructions || [])
+                        .filter(i => i.text && (i.text.toLowerCase().includes('left') || i.text.toLowerCase().includes('right')))
+                        .map(i => i.text);
+                    const turnMessage = turns.length ? ` Then, ${turns.join('. Then ')}.` : '';
+                    speakGuidance(`Navigating to ${plot.name}, plot ${plot.plotCode}. The grave is approximately ${formattedDist} away by road.${turnMessage} Please follow the highlighted path on the map.`);
+                }
+            );
+        }
 
-                            const distMeters = Math.round(route.summary.totalDistance);
-                            const formattedDist = formatDistance(distMeters);
-                            const turns = (route.instructions || [])
-                                .filter(i => i.text && (i.text.toLowerCase().includes('left') || i.text.toLowerCase().includes('right')))
-                                .map(i => i.text);
-                            const turnMessage = turns.length ? ` Then, ${turns.join('. Then ')}.` : '';
-                            speakGuidance(`Navigating to ${name}, plot ${plotCode}. The grave is approximately ${formattedDist} away by road.${turnMessage} Please follow the highlighted path on the map.`);
-                        }
-                    );
-                }, () => {
-                    speakGuidance('Unable to detect your current location. Please enable location services to use voice navigation.');
-                });
-            } else {
-                speakGuidance('Geolocation is not supported on this device.');
+        function onFirstFix(position) {
+            if (!activePlot) return;
+            updateUserMarker(position);
+            const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+            const plotLatLng = L.latLng(activePlot.lat, activePlot.lng);
+
+            if (destinationMarker) map.removeLayer(destinationMarker);
+            destinationMarker = L.circleMarker(plotLatLng, {
+                radius: 10, fillColor: '#10b981', color: '#ffffff', weight: 3, fillOpacity: 1
+            }).addTo(map);
+
+            const straightDist = userLatLng.distanceTo(plotLatLng);
+
+            if (straightDist <= ARRIVED_THRESHOLD) {
+                const arrivedMsg = `You have already arrived at ${activePlot.name}, plot ${activePlot.plotCode}.`;
+                stopNavigation(false, true);
+                setNavStatus('You have arrived.');
+                speakGuidance(arrivedMsg);
+                return;
             }
+
+            if (position.coords.accuracy > 80) {
+                setNavStatus(`GPS accuracy is low (±${Math.round(position.coords.accuracy)}m). Move to an open area for a better fix.`, true);
+            } else {
+                setNavStatus(`${formatDistance(Math.round(straightDist))} to plot ${activePlot.plotCode}.`);
+            }
+
+            drawRouteToPlot(userLatLng, plotLatLng, straightDist);
+            startWatching();
+        }
+
+        function showGeoError(err) {
+            let msg = 'Unable to detect your current location.';
+            if (err) {
+                if (err.code === err.PERMISSION_DENIED) {
+                    msg = 'Location permission was denied. Allow location access for this app or browser, then try again.';
+                } else if (err.code === err.POSITION_UNAVAILABLE) {
+                    msg = 'Your position is unavailable. Turn on GPS/location services and move to an open area.';
+                } else if (err.code === err.TIMEOUT) {
+                    msg = 'Location request timed out. Make sure GPS is on, then try again.';
+                }
+            }
+            stopNavigation(false);
+            setNavStatus(msg, true);
+            speakGuidance(msg);
+        }
+
+        function onFirstFixError(err) {
+            if (err && err.code === err.TIMEOUT && !retriedLowAccuracy) {
+                retriedLowAccuracy = true;
+                setNavStatus('Still locating — trying network location…');
+                navigator.geolocation.getCurrentPosition(onFirstFix, showGeoError, GEO_FALLBACK);
+                return;
+            }
+            showGeoError(err);
+        }
+
+        function navigateToPlotWrapper(lat, lng, name, plotCode, dod) {
+            map.flyTo([lat, lng], 19, { animate: true });
+
+            if (!('geolocation' in navigator)) {
+                setNavStatus('Geolocation is not supported on this device.', true);
+                speakGuidance('Geolocation is not supported on this device.');
+                return;
+            }
+            if (!window.isSecureContext) {
+                const msg = 'Location is blocked on an insecure connection. Open the site over HTTPS or use the installed app.';
+                setNavStatus(msg, true);
+                speakGuidance(msg);
+                return;
+            }
+
+            stopNavigation(false);
+            activePlot = { lat, lng, name, plotCode };
+            retriedLowAccuracy = false;
+            const btn = document.getElementById('stopNavBtn');
+            if (btn) btn.classList.remove('hidden');
+            setNavStatus('Locating you…');
+            navigator.geolocation.getCurrentPosition(onFirstFix, onFirstFixError, GEO_HIGH_ACCURACY);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
