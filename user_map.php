@@ -363,11 +363,13 @@ try {
 
         // Travel modes (Google Maps style). The public OSRM demo server only
         // exposes driving / walking / cycling profiles, so motorcycle routes
-        // reuse the driving network with a faster ETA factor.
+        // reuse the driving network. ETAs are computed locally as
+        // routeDistance / avgSpeed (m/s) — tune the speeds to match local
+        // conditions (walking ~5 km/h, motorcycle ~30 km/h, vehicle ~36 km/h).
         const TRAVEL_MODES = {
-            walking:    { profile: 'walking', label: 'Walking',    color: '#06b6d4', dashArray: '2, 8', etaFactor: 1,   fallbackSpeed: 1.4 },
-            motorcycle: { profile: 'driving', label: 'Motorcycle', color: '#10b981', dashArray: null,   etaFactor: 0.8, fallbackSpeed: 8 },
-            driving:    { profile: 'driving', label: 'Vehicle',    color: '#8b5cf6', dashArray: null,   etaFactor: 1,   fallbackSpeed: 10 }
+            walking:    { profile: 'walking', label: 'Walking',    color: '#06b6d4', dashArray: '2, 8', avgSpeed: 1.4 },
+            motorcycle: { profile: 'driving', label: 'Motorcycle', color: '#10b981', dashArray: null,   avgSpeed: 8.3 },
+            driving:    { profile: 'driving', label: 'Vehicle',    color: '#8b5cf6', dashArray: null,   avgSpeed: 10 }
         };
         let travelMode = 'walking';
 
@@ -639,13 +641,27 @@ try {
         let geoAttempt = 0;
         let lastUserLatLng = null;
         let lastRouteEtaText = '';
+        let routePath = null;
+        let routeOrigin = null;
+        let lastRerouteTime = 0;
+        let routeRequestId = 0;
+        let lastRouteRemaining = null;
+        let passiveWatchId = null;
+        let passiveCentered = false;
 
         const ARRIVED_THRESHOLD = 30;   // meters
+        const OFF_ROUTE_THRESHOLD = 40; // meters — straying farther than this forces a re-route
+        const REROUTE_MOVE_DISTANCE = 20; // meters — route recomputes once the user has moved this far
+        const REROUTE_MIN_INTERVAL = 10000; // ms between automatic re-route requests
+        const REROUTE_OFF_ROUTE_MIN_INTERVAL = 5000; // ms floor between off-route re-requests
         const MAX_VOICE_RANGE = 1000000;
         const GEO_QUICK = { enableHighAccuracy: false, timeout: 8000, maximumAge: 120000 };
         const GEO_HIGH_ACCURACY = { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 };
         const GEO_FALLBACK = { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 };
         const GEO_WATCH = { enableHighAccuracy: true, timeout: 30000, maximumAge: 5000 };
+        // Low-power options for the always-on "where am I" marker outside navigation.
+        const GEO_PASSIVE = { enableHighAccuracy: false, timeout: 20000, maximumAge: 30000 };
+        const PASSIVE_RECENTER_RANGE = 2000; // only auto-center on the user if this close to the mapped area (m)
 
         // Facebook/Messenger and similar in-app browsers frequently delay or
         // block GPS fixes — warn the user to open the page in a real browser.
@@ -725,17 +741,24 @@ try {
         }
 
         function updateUserMarker(position) {
-            lastUserLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
             const ll = [position.coords.latitude, position.coords.longitude];
-            if (userLocationMarker) map.removeLayer(userLocationMarker);
-            if (userAccuracyCircle) map.removeLayer(userAccuracyCircle);
-            userAccuracyCircle = L.circle(ll, {
-                radius: Math.min(position.coords.accuracy || 0, 200),
-                color: '#06b6d4', weight: 1, opacity: 0.5, fillColor: '#06b6d4', fillOpacity: 0.12
-            }).addTo(map);
-            userLocationMarker = L.circleMarker(ll, {
-                radius: 8, fillColor: '#06b6d4', color: '#ffffff', weight: 3, fillOpacity: 1
-            }).addTo(map);
+            lastUserLatLng = L.latLng(ll[0], ll[1]);
+            const accRadius = Math.min(position.coords.accuracy || 0, 200);
+            if (userAccuracyCircle) {
+                userAccuracyCircle.setLatLng(ll).setRadius(accRadius);
+            } else {
+                userAccuracyCircle = L.circle(ll, {
+                    radius: accRadius,
+                    color: '#06b6d4', weight: 1, opacity: 0.5, fillColor: '#06b6d4', fillOpacity: 0.12
+                }).addTo(map);
+            }
+            if (userLocationMarker) {
+                userLocationMarker.setLatLng(ll);
+            } else {
+                userLocationMarker = L.circleMarker(ll, {
+                    radius: 8, fillColor: '#06b6d4', color: '#ffffff', weight: 3, fillOpacity: 1
+                }).addTo(map);
+            }
         }
 
         function stopNavigation(announce = true, keepMarkers = false) {
@@ -752,21 +775,27 @@ try {
             }
             lastUserLatLng = null;
             lastRouteEtaText = '';
+            routePath = null;
+            routeOrigin = null;
+            lastRouteRemaining = null;
+            routeRequestId++;
             const btn = document.getElementById('stopNavBtn');
             if (btn) btn.classList.add('hidden');
             const modeBar = document.getElementById('travelModeBar');
             if (modeBar) modeBar.classList.add('hidden');
             setNavStatus(null);
             if (announce) speakGuidance('Navigation ended.');
+            startPassiveTracking();
         }
 
         function startWatching() {
+            stopPassiveTracking();
             if (locationWatchId !== null) navigator.geolocation.clearWatch(locationWatchId);
             locationWatchId = navigator.geolocation.watchPosition(position => {
                 if (!activePlot) return;
                 updateUserMarker(position);
-                const dist = L.latLng(position.coords.latitude, position.coords.longitude)
-                    .distanceTo(L.latLng(activePlot.lat, activePlot.lng));
+                const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+                const dist = userLatLng.distanceTo(L.latLng(activePlot.lat, activePlot.lng));
                 if (dist <= ARRIVED_THRESHOLD) {
                     const arrivedMsg = `You have arrived at ${activePlot.name}, plot ${activePlot.plotCode}.`;
                     const label = activePlot.plotCode;
@@ -775,10 +804,104 @@ try {
                     speakGuidance(arrivedMsg);
                     return;
                 }
-                setNavStatus(`${TRAVEL_MODES[travelMode].label} · ${formatDistance(Math.max(0, Math.round(dist)))} to plot ${activePlot.plotCode}${lastRouteEtaText}`);
+                // The start waypoint follows the user: the travelled part of
+                // the line is trimmed, the map pans to keep them in view, and
+                // straying off the path triggers a throttled re-route.
+                updateRouteProgress(userLatLng);
+                if (!map.getBounds().pad(-0.2).contains(userLatLng)) {
+                    map.panTo(userLatLng, { animate: true });
+                }
+                const shownDist = lastRouteRemaining !== null ? Math.max(0, Math.round(lastRouteRemaining)) : Math.max(0, Math.round(dist));
+                setNavStatus(`${TRAVEL_MODES[travelMode].label} · ${formatDistance(shownDist)} to plot ${activePlot.plotCode}${lastRouteEtaText}`);
             }, err => {
                 console.warn('watchPosition error:', err);
             }, GEO_WATCH);
+        }
+
+        // Projects a point onto a route segment (equirectangular approximation,
+        // accurate enough for the short spans involved here) and returns the
+        // projected point plus the distance to it in meters.
+        function projectOnSegment(p, a, b) {
+            const latK = 111320;
+            const lngK = 111320 * Math.cos(p.lat * Math.PI / 180);
+            const px = p.lng * lngK, py = p.lat * latK;
+            const ax = a.lng * lngK, ay = a.lat * latK;
+            const bx = b.lng * lngK, by = b.lat * latK;
+            const dx = bx - ax, dy = by - ay;
+            const len2 = dx * dx + dy * dy;
+            let t = len2 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
+            t = Math.max(0, Math.min(1, t));
+            const qlat = a.lat + t * (b.lat - a.lat);
+            const qlng = a.lng + t * (b.lng - a.lng);
+            const qx = qlng * lngK, qy = qlat * latK;
+            return { dist: Math.hypot(px - qx, py - qy), point: L.latLng(qlat, qlng) };
+        }
+
+        // Asks OSRM for a fresh route from the user's live position. Off-route
+        // re-requests use a shorter gap than the regular movement-based ones.
+        function requestReroute(userLatLng, offRoute) {
+            const minGap = offRoute ? REROUTE_OFF_ROUTE_MIN_INTERVAL : REROUTE_MIN_INTERVAL;
+            if (Date.now() - lastRerouteTime < minGap) return;
+            lastRerouteTime = Date.now();
+            const plotLatLng = L.latLng(activePlot.lat, activePlot.lng);
+            setNavStatus(`${TRAVEL_MODES[travelMode].label} · re-routing…`);
+            drawRouteToPlot(userLatLng, plotLatLng, userLatLng.distanceTo(plotLatLng), true);
+        }
+
+        // Dynamic routing: every GPS fix snaps the path to the user's live
+        // position (the travelled part is trimmed), recomputes the remaining
+        // route distance, and requests a new route once they have moved far
+        // enough or strayed off the path — so navigation updates in real time.
+        function updateRouteProgress(userLatLng) {
+            if (navigationLine && routePath && routePath.length) {
+                let bestSeg = 0, bestProj = routePath[0], bestDist = Infinity;
+                if (routePath.length < 2) {
+                    bestDist = userLatLng.distanceTo(routePath[0]);
+                } else {
+                    for (let i = 0; i < routePath.length - 1; i++) {
+                        const res = projectOnSegment(userLatLng, routePath[i], routePath[i + 1]);
+                        if (res.dist < bestDist) { bestDist = res.dist; bestSeg = i; bestProj = res.point; }
+                    }
+                }
+                if (bestDist <= OFF_ROUTE_THRESHOLD) {
+                    const rest = routePath.slice(bestSeg + 1);
+                    navigationLine.setLatLngs([userLatLng, bestProj, ...rest]);
+                    let remaining = rest.length ? bestProj.distanceTo(rest[0]) : 0;
+                    for (let i = 0; i < rest.length - 1; i++) remaining += rest[i].distanceTo(rest[i + 1]);
+                    lastRouteRemaining = remaining;
+                } else {
+                    requestReroute(userLatLng, true);
+                }
+            }
+            if (routeOrigin && userLatLng.distanceTo(routeOrigin) >= REROUTE_MOVE_DISTANCE) {
+                requestReroute(userLatLng, false);
+            }
+        }
+
+        // PASSIVE LOCATION TRACKING
+        // Keeps the user's dot on the map and moving even when they are not
+        // navigating. While navigation is active the high-accuracy watch in
+        // startWatching() takes over and this one is paused to save battery.
+        function startPassiveTracking() {
+            if (passiveWatchId !== null || !('geolocation' in navigator) || !window.isSecureContext) return;
+            passiveWatchId = navigator.geolocation.watchPosition(position => {
+                if (activePlot) return;
+                updateUserMarker(position);
+                if (!passiveCentered) {
+                    passiveCentered = true;
+                    const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+                    if (userLatLng.distanceTo(map.getCenter()) <= PASSIVE_RECENTER_RANGE) {
+                        map.setView(userLatLng, Math.max(map.getZoom(), 18), { animate: true });
+                    }
+                }
+            }, () => {}, GEO_PASSIVE);
+        }
+
+        function stopPassiveTracking() {
+            if (passiveWatchId !== null) {
+                navigator.geolocation.clearWatch(passiveWatchId);
+                passiveWatchId = null;
+            }
         }
 
         // Points ringing a blocked zone, used as "via" waypoints so OSRM is
@@ -801,8 +924,10 @@ try {
             return coords.some(c => L.latLng(c.lat, c.lng).distanceTo(center) <= zone.radius);
         }
 
-        function drawRouteToPlot(userLatLng, plotLatLng, straightDist) {
+        function drawRouteToPlot(userLatLng, plotLatLng, straightDist, isReroute = false) {
             const plot = activePlot;
+            const requestId = ++routeRequestId;
+            routeOrigin = userLatLng;
             const mode = TRAVEL_MODES[travelMode] || TRAVEL_MODES.walking;
             const avoidVehiclesZones = mode.profile === 'driving';
             let waypoints = [userLatLng, plotLatLng];
@@ -821,7 +946,7 @@ try {
                 router.route(
                     waypoints.map(w => L.Routing.waypoint(w)),
                     (err, routes) => {
-                    if (plot !== activePlot) return;
+                    if (plot !== activePlot || requestId !== routeRequestId) return;
                     if (navigationLine) { map.removeLayer(navigationLine); navigationLine = null; }
                     if (err || !routes || !routes.length) {
                         // The walking profile is not always available on the
@@ -836,10 +961,11 @@ try {
                         navigationLine = L.polyline([userLatLng, plotLatLng], {
                             color: mode.color, weight: 5, opacity: 0.85, dashArray: mode.dashArray || '10, 10'
                         }).addTo(map);
-                        map.fitBounds(L.latLngBounds([userLatLng, plotLatLng]), { padding: [60, 60] });
-                        lastRouteEtaText = ` · ~${formatDuration(straightDist / mode.fallbackSpeed)}`;
+                        routePath = [userLatLng, plotLatLng];
+                        if (!isReroute) map.fitBounds(L.latLngBounds([userLatLng, plotLatLng]), { padding: [60, 60] });
+                        lastRouteEtaText = ` · ~${formatDuration(straightDist / mode.avgSpeed)}`;
                         setNavStatus(`${mode.label} · ${formatDistance(Math.round(straightDist))} to plot ${plot.plotCode}${lastRouteEtaText}`);
-                        if (straightDist <= MAX_VOICE_RANGE) {
+                        if (!isReroute && straightDist <= MAX_VOICE_RANGE) {
                             const fallbackDist = formatDistance(Math.round(straightDist));
                             speakGuidance(`Navigating to ${plot.name}, plot ${plot.plotCode}. The grave is approximately ${fallbackDist} away. Please follow the highlighted path on the map.`);
                         }
@@ -885,15 +1011,16 @@ try {
                     navigationLine = L.polyline(pathCoords, {
                         color: mode.color, weight: 5, opacity: 0.85, dashArray: mode.dashArray
                     }).addTo(map);
+                    routePath = pathCoords;
 
-                    map.fitBounds(navigationLine.getBounds(), { padding: [60, 60] });
+                    if (!isReroute) map.fitBounds(navigationLine.getBounds(), { padding: [60, 60] });
 
                     const distMeters = Math.round(route.summary.totalDistance);
-                    const etaText = formatDuration(route.summary.totalTime * mode.etaFactor);
+                    const etaText = formatDuration(distMeters / mode.avgSpeed);
                     lastRouteEtaText = ` · ~${etaText}`;
                     setNavStatus(`${mode.label} · ${formatDistance(distMeters)} to plot ${plot.plotCode}${lastRouteEtaText}`);
 
-                    if (straightDist > MAX_VOICE_RANGE) {
+                    if (isReroute || straightDist > MAX_VOICE_RANGE) {
                         return;
                     }
 
@@ -1007,6 +1134,7 @@ try {
             }
 
             stopNavigation(false);
+            stopPassiveTracking();
             activePlot = { lat, lng, name, plotCode };
             geoAttempt = 0;
             const btn = document.getElementById('stopNavBtn');
@@ -1036,6 +1164,7 @@ try {
             }
             
             renderIcons();
+            startPassiveTracking();
         });
 
         window.addEventListener('load', renderIcons);
