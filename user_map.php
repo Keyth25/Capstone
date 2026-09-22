@@ -284,6 +284,18 @@ try {
 
             <!-- NAVIGATION STATUS & CONTROLS -->
             <div class="absolute z-[1000] bottom-[max(4.75rem,calc(env(safe-area-inset-bottom)+4rem))] left-1/2 -translate-x-1/2 sm:bottom-auto sm:left-auto sm:translate-x-0 sm:top-[4.25rem] sm:right-4 flex flex-col items-center sm:items-end gap-2 pointer-events-none">
+                <!-- TRAVEL MODE SELECTOR (like Google Maps) -->
+                <div id="travelModeBar" class="hidden pointer-events-auto glass-panel border border-slate-200/80 dark:border-slate-800 rounded-xl p-1 flex items-center gap-1 shadow-lg">
+                    <button type="button" data-mode="walking" onclick="setTravelMode('walking')" title="Walking" class="travel-mode-btn px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition bg-cyan-600 text-white shadow-sm">
+                        <i class="fa-solid fa-person-walking text-xs"></i><span>Walk</span>
+                    </button>
+                    <button type="button" data-mode="motorcycle" onclick="setTravelMode('motorcycle')" title="Motorcycle" class="travel-mode-btn px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                        <i class="fa-solid fa-motorcycle text-xs"></i><span>Motor</span>
+                    </button>
+                    <button type="button" data-mode="driving" onclick="setTravelMode('driving')" title="Vehicle" class="travel-mode-btn px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                        <i class="fa-solid fa-car text-xs"></i><span>Vehicle</span>
+                    </button>
+                </div>
                 <div id="navStatus" class="hidden pointer-events-auto glass-panel border border-slate-200/80 dark:border-slate-800 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-lg max-w-[260px] text-center sm:text-right"></div>
                 <button id="stopNavBtn" type="button" onclick="stopNavigation()" class="hidden pointer-events-auto px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold shadow-lg shadow-rose-600/30 flex items-center gap-1.5 transition">
                     <i class="fa-solid fa-stop text-[10px]"></i> End Navigation
@@ -348,6 +360,41 @@ try {
 
         const graveMarkerGroup = L.featureGroup().addTo(map);
         const deceasedRecords = <?= json_encode($records) ?>;
+
+        // Travel modes (Google Maps style). The public OSRM demo server only
+        // exposes driving / walking / cycling profiles, so motorcycle routes
+        // reuse the driving network with a faster ETA factor.
+        const TRAVEL_MODES = {
+            walking:    { profile: 'walking', label: 'Walking',    color: '#06b6d4', dashArray: '2, 8', etaFactor: 1,   fallbackSpeed: 1.4 },
+            motorcycle: { profile: 'driving', label: 'Motorcycle', color: '#10b981', dashArray: null,   etaFactor: 0.8, fallbackSpeed: 8 },
+            driving:    { profile: 'driving', label: 'Vehicle',    color: '#8b5cf6', dashArray: null,   etaFactor: 1,   fallbackSpeed: 10 }
+        };
+        let travelMode = 'walking';
+
+        // Roads/areas closed to public & private vehicles (e.g. terminals where
+        // only buses may pass). Motor/vehicle routes that cross one of these
+        // zones are retried via detour waypoints placed around it. Walking
+        // routes are unaffected. Adjust lat/lng/radius to match the ground.
+        const BLOCKED_VEHICLE_ZONES = [
+            { name: 'Pioneer Ave cor De Noche St (terminal)', lat: 6.2199, lng: 125.0625, radius: 120 }
+        ];
+        const MAX_DETOUR_ATTEMPTS = 8;
+
+        const POPUP_MODE_BASE = 'popup-mode-btn flex-1 py-2 rounded-xl border text-[11px] font-bold flex flex-col items-center justify-center gap-1 transition ';
+        const POPUP_MODE_ACTIVE = 'bg-violet-600 border-violet-500 text-white shadow-md shadow-violet-600/30';
+        const POPUP_MODE_INACTIVE = 'bg-slate-800/60 border-slate-700/70 text-slate-400 hover:text-white hover:border-slate-500';
+
+        function popupModeButton(mode, icon, label) {
+            const state = travelMode === mode ? POPUP_MODE_ACTIVE : POPUP_MODE_INACTIVE;
+            return `<button type="button" data-mode="${mode}" onclick="selectPopupMode(this,'${mode}')" class="${POPUP_MODE_BASE}${state}"><i class="fa-solid ${icon} text-sm"></i>${label}</button>`;
+        }
+
+        function selectPopupMode(btn, mode) {
+            setTravelMode(mode);
+            btn.parentElement.querySelectorAll('.popup-mode-btn').forEach(b => {
+                b.className = POPUP_MODE_BASE + (b.dataset.mode === mode ? POPUP_MODE_ACTIVE : POPUP_MODE_INACTIVE);
+            });
+        }
 
         function createPlotboxPopupHTML(name, plotCode, dob, dod, lat, lng) {
             const rawCode = String(plotCode || 'N/A');
@@ -429,6 +476,11 @@ try {
                                     </span>
                                 </div>
                             </div>
+                        </div>
+                        <div class="flex items-stretch gap-2 mb-3">
+                            ${popupModeButton('walking', 'fa-person-walking', 'Walk')}
+                            ${popupModeButton('motorcycle', 'fa-motorcycle', 'Motor')}
+                            ${popupModeButton('driving', 'fa-car', 'Vehicle')}
                         </div>
                         <button onclick="navigateToPlotWrapper(${lat}, ${lng}, '${name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${rawCode.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${dod}')" class="relative w-full py-3 bg-gradient-to-r from-violet-600 to-purple-500 hover:from-violet-500 hover:to-purple-400 text-white text-sm font-bold rounded-xl shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 transition">
                             <i class="fa-solid fa-location-arrow text-sm"></i> Start Navigation
@@ -584,13 +636,21 @@ try {
         let navigationLine = null, userLocationMarker = null, userAccuracyCircle = null, destinationMarker = null;
         let locationWatchId = null;
         let activePlot = null;
-        let retriedLowAccuracy = false;
+        let geoAttempt = 0;
+        let lastUserLatLng = null;
+        let lastRouteEtaText = '';
 
         const ARRIVED_THRESHOLD = 30;   // meters
         const MAX_VOICE_RANGE = 1000000;
-        const GEO_HIGH_ACCURACY = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
-        const GEO_FALLBACK = { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 };
+        const GEO_QUICK = { enableHighAccuracy: false, timeout: 8000, maximumAge: 120000 };
+        const GEO_HIGH_ACCURACY = { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 };
+        const GEO_FALLBACK = { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 };
         const GEO_WATCH = { enableHighAccuracy: true, timeout: 30000, maximumAge: 5000 };
+
+        // Facebook/Messenger and similar in-app browsers frequently delay or
+        // block GPS fixes — warn the user to open the page in a real browser.
+        const IN_APP_BROWSER = /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|Twitter/i.test(navigator.userAgent || '');
+        const IN_APP_HINT = ' You opened this inside another app (e.g. Messenger) — tap the ⋮ menu and choose "Open in browser" for reliable GPS.';
 
         // VOICE GUIDANCE (Web Speech API)
         function speakGuidance(text) {
@@ -624,6 +684,36 @@ try {
             return `${meters} meter${meters === 1 ? '' : 's'}`;
         }
 
+        function formatDuration(seconds) {
+            const mins = Math.round(seconds / 60);
+            if (mins < 1) return 'less than a minute';
+            if (mins < 60) return `${mins} min`;
+            const h = Math.floor(mins / 60), m = mins % 60;
+            return m ? `${h} hr ${m} min` : `${h} hr`;
+        }
+
+        function updateTravelModeButtons() {
+            document.querySelectorAll('#travelModeBar [data-mode]').forEach(btn => {
+                const active = btn.dataset.mode === travelMode;
+                btn.className = 'travel-mode-btn px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition ' +
+                    (active ? 'bg-cyan-600 text-white shadow-sm'
+                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white');
+            });
+        }
+
+        function setTravelMode(mode) {
+            if (!TRAVEL_MODES[mode]) return;
+            travelMode = mode;
+            updateTravelModeButtons();
+            if (activePlot && lastUserLatLng) {
+                if (navigationLine) { map.removeLayer(navigationLine); navigationLine = null; }
+                lastRouteEtaText = '';
+                const plotLatLng = L.latLng(activePlot.lat, activePlot.lng);
+                setNavStatus(`Re-routing via ${TRAVEL_MODES[mode].label.toLowerCase()}…`);
+                drawRouteToPlot(lastUserLatLng, plotLatLng, lastUserLatLng.distanceTo(plotLatLng));
+            }
+        }
+
         function setNavStatus(text, isError = false) {
             const el = document.getElementById('navStatus');
             if (!el) return;
@@ -635,6 +725,7 @@ try {
         }
 
         function updateUserMarker(position) {
+            lastUserLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
             const ll = [position.coords.latitude, position.coords.longitude];
             if (userLocationMarker) map.removeLayer(userLocationMarker);
             if (userAccuracyCircle) map.removeLayer(userAccuracyCircle);
@@ -659,8 +750,12 @@ try {
                 if (userAccuracyCircle) { map.removeLayer(userAccuracyCircle); userAccuracyCircle = null; }
                 if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
             }
+            lastUserLatLng = null;
+            lastRouteEtaText = '';
             const btn = document.getElementById('stopNavBtn');
             if (btn) btn.classList.add('hidden');
+            const modeBar = document.getElementById('travelModeBar');
+            if (modeBar) modeBar.classList.add('hidden');
             setNavStatus(null);
             if (announce) speakGuidance('Navigation ended.');
         }
@@ -680,25 +775,70 @@ try {
                     speakGuidance(arrivedMsg);
                     return;
                 }
-                setNavStatus(`${formatDistance(Math.max(0, Math.round(dist)))} to plot ${activePlot.plotCode} — follow the highlighted path.`);
+                setNavStatus(`${TRAVEL_MODES[travelMode].label} · ${formatDistance(Math.max(0, Math.round(dist)))} to plot ${activePlot.plotCode}${lastRouteEtaText}`);
             }, err => {
                 console.warn('watchPosition error:', err);
             }, GEO_WATCH);
         }
 
+        // Points ringing a blocked zone, used as "via" waypoints so OSRM is
+        // forced onto roads outside the restricted area.
+        function detourCandidates(zone) {
+            const pts = [];
+            const r = zone.radius + 80;
+            for (let deg = 0; deg < 360; deg += 45) {
+                const rad = deg * Math.PI / 180;
+                pts.push(L.latLng(
+                    zone.lat + (r * Math.cos(rad)) / 111320,
+                    zone.lng + (r * Math.sin(rad)) / (111320 * Math.cos(zone.lat * Math.PI / 180))
+                ));
+            }
+            return pts;
+        }
+
+        function routeCrossesZone(coords, zone) {
+            const center = L.latLng(zone.lat, zone.lng);
+            return coords.some(c => L.latLng(c.lat, c.lng).distanceTo(center) <= zone.radius);
+        }
+
         function drawRouteToPlot(userLatLng, plotLatLng, straightDist) {
             const plot = activePlot;
-            const router = L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' });
-            router.route(
-                [L.Routing.waypoint(userLatLng), L.Routing.waypoint(plotLatLng)],
-                (err, routes) => {
+            const mode = TRAVEL_MODES[travelMode] || TRAVEL_MODES.walking;
+            const avoidVehiclesZones = mode.profile === 'driving';
+            let waypoints = [userLatLng, plotLatLng];
+            let retriedDriving = (mode.profile === 'driving');
+            let detourZone = null;
+            let detourQueue = [];
+            let detourAttempts = 0;
+            requestOsrmRoute(mode.profile);
+
+            function requestOsrmRoute(profile) {
+                const router = L.Routing.osrmv1({
+                    serviceUrl: 'https://router.project-osrm.org/route/v1',
+                    profile: profile,
+                    timeout: 15000
+                });
+                router.route(
+                    waypoints.map(w => L.Routing.waypoint(w)),
+                    (err, routes) => {
                     if (plot !== activePlot) return;
+                    if (navigationLine) { map.removeLayer(navigationLine); navigationLine = null; }
                     if (err || !routes || !routes.length) {
-                        // Fallback: straight walking path if the road route fails
+                        // The walking profile is not always available on the
+                        // public demo server — retry once on the driving
+                        // network before falling back to a straight line.
+                        if (!retriedDriving && profile !== 'driving') {
+                            retriedDriving = true;
+                            requestOsrmRoute('driving');
+                            return;
+                        }
+                        // Fallback: straight path if the road route fails
                         navigationLine = L.polyline([userLatLng, plotLatLng], {
-                            color: '#06b6d4', weight: 5, opacity: 0.85, dashArray: '10, 10'
+                            color: mode.color, weight: 5, opacity: 0.85, dashArray: mode.dashArray || '10, 10'
                         }).addTo(map);
                         map.fitBounds(L.latLngBounds([userLatLng, plotLatLng]), { padding: [60, 60] });
+                        lastRouteEtaText = ` · ~${formatDuration(straightDist / mode.fallbackSpeed)}`;
+                        setNavStatus(`${mode.label} · ${formatDistance(Math.round(straightDist))} to plot ${plot.plotCode}${lastRouteEtaText}`);
                         if (straightDist <= MAX_VOICE_RANGE) {
                             const fallbackDist = formatDistance(Math.round(straightDist));
                             speakGuidance(`Navigating to ${plot.name}, plot ${plot.plotCode}. The grave is approximately ${fallbackDist} away. Please follow the highlighted path on the map.`);
@@ -707,6 +847,27 @@ try {
                     }
 
                     const route = routes[0];
+                    // Vehicle routes must not pass through closed roads such as
+                    // the bus terminal — if one does, retry via a detour
+                    // waypoint placed just outside the restricted zone.
+                    if (avoidVehiclesZones) {
+                        const blocked = BLOCKED_VEHICLE_ZONES.find(z => routeCrossesZone(route.coordinates, z));
+                        if (blocked && detourAttempts < MAX_DETOUR_ATTEMPTS) {
+                            if (blocked !== detourZone) {
+                                detourZone = blocked;
+                                detourQueue = detourCandidates(blocked);
+                            }
+                            const via = detourQueue.shift();
+                            if (via) {
+                                detourAttempts++;
+                                waypoints = [userLatLng, via, plotLatLng];
+                                setNavStatus(`${mode.label} · re-routing around closed road…`);
+                                requestOsrmRoute(profile);
+                                return;
+                            }
+                        }
+                    }
+
                     // Trim the road geometry at the point closest to the plot, then
                     // connect straight to the exact grave location. This prevents the
                     // path from overshooting down the road when OSRM snaps the
@@ -722,24 +883,29 @@ try {
                     pathCoords.push(plotLatLng);
 
                     navigationLine = L.polyline(pathCoords, {
-                        color: '#06b6d4', weight: 5, opacity: 0.85
+                        color: mode.color, weight: 5, opacity: 0.85, dashArray: mode.dashArray
                     }).addTo(map);
 
                     map.fitBounds(navigationLine.getBounds(), { padding: [60, 60] });
+
+                    const distMeters = Math.round(route.summary.totalDistance);
+                    const etaText = formatDuration(route.summary.totalTime * mode.etaFactor);
+                    lastRouteEtaText = ` · ~${etaText}`;
+                    setNavStatus(`${mode.label} · ${formatDistance(distMeters)} to plot ${plot.plotCode}${lastRouteEtaText}`);
 
                     if (straightDist > MAX_VOICE_RANGE) {
                         return;
                     }
 
-                    const distMeters = Math.round(route.summary.totalDistance);
                     const formattedDist = formatDistance(distMeters);
                     const turns = (route.instructions || [])
                         .filter(i => i.text && (i.text.toLowerCase().includes('left') || i.text.toLowerCase().includes('right')))
                         .map(i => i.text);
                     const turnMessage = turns.length ? ` Then, ${turns.join('. Then ')}.` : '';
-                    speakGuidance(`Navigating to ${plot.name}, plot ${plot.plotCode}. The grave is approximately ${formattedDist} away by road.${turnMessage} Please follow the highlighted path on the map.`);
-                }
-            );
+                    speakGuidance(`Navigating to ${plot.name}, plot ${plot.plotCode}. The grave is approximately ${formattedDist} away by ${mode.label.toLowerCase()}. Estimated travel time is ${etaText}.${turnMessage} Please follow the highlighted path on the map.`);
+                    }
+                );
+            }
         }
 
         function onFirstFix(position) {
@@ -784,19 +950,45 @@ try {
                     msg = 'Location request timed out. Make sure GPS is on, then try again.';
                 }
             }
+            if (IN_APP_BROWSER) msg += IN_APP_HINT;
             stopNavigation(false);
             setNavStatus(msg, true);
             speakGuidance(msg);
         }
 
         function onFirstFixError(err) {
-            if (err && err.code === err.TIMEOUT && !retriedLowAccuracy) {
-                retriedLowAccuracy = true;
+            if (err && err.code === err.PERMISSION_DENIED) {
+                showGeoError(err);
+                return;
+            }
+            geoAttempt++;
+            if (geoAttempt === 1) {
+                setNavStatus('Still locating — trying GPS…');
+                navigator.geolocation.getCurrentPosition(onFirstFix, onFirstFixError, GEO_HIGH_ACCURACY);
+                return;
+            }
+            if (geoAttempt === 2) {
                 setNavStatus('Still locating — trying network location…');
-                navigator.geolocation.getCurrentPosition(onFirstFix, showGeoError, GEO_FALLBACK);
+                navigator.geolocation.getCurrentPosition(onFirstFix, onFirstFixError, GEO_FALLBACK);
                 return;
             }
             showGeoError(err);
+            // Keep listening in the background — if a GPS fix arrives late,
+            // navigation starts automatically instead of making the user retry.
+            const pendingPlot = activePlot;
+            if (pendingPlot && locationWatchId === null) {
+                activePlot = pendingPlot;   // showGeoError cleared it
+                const btn = document.getElementById('stopNavBtn');
+                if (btn) btn.classList.remove('hidden');
+                const modeBar = document.getElementById('travelModeBar');
+                if (modeBar) modeBar.classList.remove('hidden');
+                locationWatchId = navigator.geolocation.watchPosition(pos => {
+                    if (activePlot !== pendingPlot) return;
+                    navigator.geolocation.clearWatch(locationWatchId);
+                    locationWatchId = null;
+                    onFirstFix(pos);
+                }, () => {}, GEO_WATCH);
+            }
         }
 
         function navigateToPlotWrapper(lat, lng, name, plotCode, dod) {
@@ -816,11 +1008,19 @@ try {
 
             stopNavigation(false);
             activePlot = { lat, lng, name, plotCode };
-            retriedLowAccuracy = false;
+            geoAttempt = 0;
             const btn = document.getElementById('stopNavBtn');
             if (btn) btn.classList.remove('hidden');
+            const modeBar = document.getElementById('travelModeBar');
+            if (modeBar) modeBar.classList.remove('hidden');
+            updateTravelModeButtons();
             setNavStatus('Locating you…');
-            navigator.geolocation.getCurrentPosition(onFirstFix, onFirstFixError, GEO_HIGH_ACCURACY);
+            if (IN_APP_BROWSER) {
+                setNavStatus('Locating you…' + IN_APP_HINT, true);
+            }
+            // Try a fast cached/network fix first so navigation can start even
+            // when a cold GPS lock takes a while; higher accuracy follows.
+            navigator.geolocation.getCurrentPosition(onFirstFix, onFirstFixError, GEO_QUICK);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
