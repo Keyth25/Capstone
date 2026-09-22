@@ -648,6 +648,7 @@ try {
         let lastRouteRemaining = null;
         let passiveWatchId = null;
         let passiveCentered = false;
+        let userMarkerAnim = null;
 
         const ARRIVED_THRESHOLD = 30;   // meters
         const OFF_ROUTE_THRESHOLD = 40; // meters — straying farther than this forces a re-route
@@ -659,8 +660,9 @@ try {
         const GEO_HIGH_ACCURACY = { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 };
         const GEO_FALLBACK = { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 };
         const GEO_WATCH = { enableHighAccuracy: true, timeout: 30000, maximumAge: 5000 };
-        // Low-power options for the always-on "where am I" marker outside navigation.
-        const GEO_PASSIVE = { enableHighAccuracy: false, timeout: 20000, maximumAge: 30000 };
+        // High-accuracy options for the always-on "where am I" marker — fresh
+        // fixes keep the dot moving in real time even outside navigation.
+        const GEO_PASSIVE = { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 };
         const PASSIVE_RECENTER_RANGE = 2000; // only auto-center on the user if this close to the mapped area (m)
 
         // Facebook/Messenger and similar in-app browsers frequently delay or
@@ -740,6 +742,9 @@ try {
                          : 'border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200');
         }
 
+        // Updates the user's dot in real time. Between GPS fixes the dot is
+        // glided smoothly to the new position with requestAnimationFrame so
+        // movement looks continuous instead of teleporting on each fix.
         function updateUserMarker(position) {
             const ll = [position.coords.latitude, position.coords.longitude];
             lastUserLatLng = L.latLng(ll[0], ll[1]);
@@ -752,13 +757,26 @@ try {
                     color: '#06b6d4', weight: 1, opacity: 0.5, fillColor: '#06b6d4', fillOpacity: 0.12
                 }).addTo(map);
             }
-            if (userLocationMarker) {
-                userLocationMarker.setLatLng(ll);
-            } else {
+            if (!userLocationMarker) {
                 userLocationMarker = L.circleMarker(ll, {
                     radius: 8, fillColor: '#06b6d4', color: '#ffffff', weight: 3, fillOpacity: 1
                 }).addTo(map);
+                return;
             }
+            if (userMarkerAnim) cancelAnimationFrame(userMarkerAnim);
+            const from = userLocationMarker.getLatLng();
+            const start = performance.now();
+            const duration = 800; // ms — just under the typical 1s GPS tick
+            const step = now => {
+                if (!userLocationMarker) { userMarkerAnim = null; return; }
+                const t = Math.min(1, (now - start) / duration);
+                userLocationMarker.setLatLng(L.latLng(
+                    from.lat + (ll[0] - from.lat) * t,
+                    from.lng + (ll[1] - from.lng) * t
+                ));
+                userMarkerAnim = t < 1 ? requestAnimationFrame(step) : null;
+            };
+            userMarkerAnim = requestAnimationFrame(step);
         }
 
         function stopNavigation(announce = true, keepMarkers = false) {
@@ -768,6 +786,7 @@ try {
             }
             activePlot = null;
             if (!keepMarkers) {
+                if (userMarkerAnim) { cancelAnimationFrame(userMarkerAnim); userMarkerAnim = null; }
                 if (navigationLine) { map.removeLayer(navigationLine); navigationLine = null; }
                 if (userLocationMarker) { map.removeLayer(userLocationMarker); userLocationMarker = null; }
                 if (userAccuracyCircle) { map.removeLayer(userAccuracyCircle); userAccuracyCircle = null; }
