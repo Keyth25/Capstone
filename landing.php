@@ -227,14 +227,14 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
 
     <!-- NAVIGATION BAR -->
     <nav class="glass-header border-b border-slate-200/70 dark:border-slate-800/70 sticky top-0 z-50 transition-colors">
-        <div class="w-full px-6 h-[76px] flex items-center gap-6">
-            <a href="#" class="flex items-center gap-3 group shrink-0">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 flex items-center justify-center text-white text-lg shadow-md shadow-brand-500/25 group-hover:scale-105 group-hover:rotate-3 transition-transform">
+        <div class="w-full px-3 sm:px-6 h-16 sm:h-[76px] flex items-center gap-3 sm:gap-6">
+            <a href="#" class="flex items-center gap-2.5 sm:gap-3 group min-w-0">
+                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 flex items-center justify-center text-white text-base sm:text-lg shadow-md shadow-brand-500/25 group-hover:scale-105 group-hover:rotate-3 transition-transform shrink-0">
                     <i class="fa-solid fa-location-dot"></i>
                 </div>
-                <span class="leading-tight">
-                    <span class="block text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">Cemetery<span class="text-brand-600 dark:text-brand-400">Nav</span></span>
-                    <span class="block text-[10px] font-semibold tracking-wide text-slate-400 dark:text-slate-500">Find &middot; Navigate &middot; Remember</span>
+                <span class="leading-tight min-w-0">
+                    <span class="block text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white truncate">Cemetery<span class="text-brand-600 dark:text-brand-400">Nav</span></span>
+                    <span class="hidden sm:block text-[10px] font-semibold tracking-wide text-slate-400 dark:text-slate-500">Find &middot; Navigate &middot; Remember</span>
                 </span>
             </a>
 
@@ -247,9 +247,9 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
                 <a href="#download" class="py-2 hover:text-brand-600 dark:hover:text-brand-400 transition">Get the App</a>
             </div>
 
-            <div class="flex items-center gap-3 sm:gap-4 ml-auto lg:ml-0 shrink-0">
-                <button id="theme-toggle" aria-label="Toggle dark mode" class="w-10 h-10 rounded-full text-slate-500 dark:text-amber-400 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Toggle theme">
-                    <i class="fa-solid fa-sun text-base" id="theme-icon"></i>
+            <div class="flex items-center gap-2 sm:gap-4 ml-auto lg:ml-0 shrink-0">
+                <button id="theme-toggle" aria-label="Toggle dark mode" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-slate-500 dark:text-amber-400 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Toggle theme">
+                    <i class="fa-solid fa-sun text-sm sm:text-base" id="theme-icon"></i>
                 </button>
 
                 <?php if ($isLoggedIn): ?>
@@ -261,7 +261,7 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
                     };
                     ?>
                     <div id="nav-user" class="flex items-center gap-3">
-                        <a href="<?= htmlspecialchars($dashboard_url) ?>" class="rounded-full bg-gradient-to-r from-brand-600 to-brand-700 px-6 py-2.5 text-sm font-bold text-white hover:from-brand-500 hover:to-brand-600 transition shadow-lg shadow-brand-600/25 flex items-center gap-2">
+                        <a href="<?= htmlspecialchars($dashboard_url) ?>" class="rounded-full bg-gradient-to-r from-brand-600 to-brand-700 px-4 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:from-brand-500 hover:to-brand-600 transition shadow-lg shadow-brand-600/25 flex items-center gap-2 whitespace-nowrap">
                             Dashboard <i class="fa-solid fa-arrow-right text-xs"></i>
                         </a>
                     </div>
@@ -270,7 +270,7 @@ $plotCard = '<div class="absolute bottom-4 right-4 z-10 flex items-center gap-3 
                         <a href="login.php?mode=login" onclick="openAuthModal('login'); return false;" class="hidden sm:flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition">
                             <i class="fa-solid fa-user text-brand-600 dark:text-brand-400"></i> Sign In
                         </a>
-                        <a href="login.php?mode=login" onclick="openAuthModal('login'); return false;" class="rounded-full bg-gradient-to-r from-brand-600 to-brand-700 px-6 py-2.5 text-sm font-bold text-white hover:from-brand-500 hover:to-brand-600 transition shadow-lg shadow-brand-600/25 flex items-center gap-2">
+                        <a href="login.php?mode=login" onclick="openAuthModal('login'); return false;" class="rounded-full bg-gradient-to-r from-brand-600 to-brand-700 px-4 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:from-brand-500 hover:to-brand-600 transition shadow-lg shadow-brand-600/25 flex items-center gap-2 whitespace-nowrap">
                             Get Started <i class="fa-solid fa-arrow-right text-xs"></i>
                         </a>
                     </div>
