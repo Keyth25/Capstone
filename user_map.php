@@ -675,6 +675,41 @@ try {
         // fixes keep the dot moving in real time even outside navigation.
         const GEO_PASSIVE = { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 };
 
+        // GPS SMOOTHING
+        // Raw fixes wander several meters even while standing still, which
+        // makes the dot shake. A Kalman filter weights each fix by its
+        // reported accuracy: noisy fixes barely move the position, precise
+        // fixes pull it quickly. A small dead-zone then ignores leftover
+        // sub-noise drift.
+        const GPS_PROCESS_NOISE = 3;    // m/s of movement the filter allows for
+        const MIN_DOT_MOVE_M = 2;       // meters — below this the dot holds still
+        let gpsFilter = null;
+
+        function makeGpsFilter() {
+            let lat = 0, lng = 0, variance = -1, lastTime = 0;
+            return {
+                process(latM, lngM, accuracy, timestamp) {
+                    accuracy = Math.max(1, accuracy || 1);
+                    if (variance < 0) {
+                        lat = latM; lng = lngM;
+                        variance = accuracy * accuracy;
+                        lastTime = timestamp;
+                    } else {
+                        const dt = timestamp - lastTime;
+                        if (dt > 0) {
+                            variance += dt * GPS_PROCESS_NOISE * GPS_PROCESS_NOISE / 1000;
+                            lastTime = timestamp;
+                        }
+                        const k = variance / (variance + accuracy * accuracy);
+                        lat += k * (latM - lat);
+                        lng += k * (lngM - lng);
+                        variance *= (1 - k);
+                    }
+                    return { lat, lng, accuracy: Math.sqrt(variance) };
+                }
+            };
+        }
+
         // Facebook/Messenger and similar in-app browsers frequently delay or
         // block GPS fixes — warn the user to open the page in a real browser.
         const IN_APP_BROWSER = /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|Twitter/i.test(navigator.userAgent || '');
@@ -752,11 +787,21 @@ try {
                          : 'border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200');
         }
 
-        // Updates the user's dot in real time. Between GPS fixes the dot is
-        // glided smoothly to the new position with requestAnimationFrame so
-        // movement looks continuous instead of teleporting on each fix.
+        // Updates the user's dot in real time. Each raw fix is passed through
+        // the Kalman filter first so GPS noise doesn't shake the marker, then
+        // the dot is glided to the smoothed position with requestAnimationFrame
+        // so movement looks continuous instead of teleporting on each fix.
+        // Returns the smoothed position so callers (arrival check, route
+        // trimming, camera panning) work from the same stable coordinates.
         function updateUserMarker(position) {
-            const ll = [position.coords.latitude, position.coords.longitude];
+            if (!gpsFilter) gpsFilter = makeGpsFilter();
+            const filtered = gpsFilter.process(
+                position.coords.latitude,
+                position.coords.longitude,
+                position.coords.accuracy,
+                position.timestamp || Date.now()
+            );
+            const ll = [filtered.lat, filtered.lng];
             lastUserLatLng = L.latLng(ll[0], ll[1]);
             const accRadius = Math.min(position.coords.accuracy || 0, 200);
             if (userAccuracyCircle) {
@@ -771,22 +816,30 @@ try {
                 userLocationMarker = L.circleMarker(ll, {
                     radius: 8, fillColor: '#06b6d4', color: '#ffffff', weight: 3, fillOpacity: 1
                 }).addTo(map);
-                return;
+                return lastUserLatLng;
+            }
+            // Hold still while the filtered position stays inside the noise
+            // band — this is what stops the dot trembling when the user is
+            // not actually moving.
+            const from = userLocationMarker.getLatLng();
+            if (from.distanceTo(lastUserLatLng) < MIN_DOT_MOVE_M) {
+                return lastUserLatLng;
             }
             if (userMarkerAnim) cancelAnimationFrame(userMarkerAnim);
-            const from = userLocationMarker.getLatLng();
             const start = performance.now();
             const duration = 800; // ms — just under the typical 1s GPS tick
             const step = now => {
                 if (!userLocationMarker) { userMarkerAnim = null; return; }
                 const t = Math.min(1, (now - start) / duration);
+                const e = t * (2 - t); // ease-out so each glide settles softly
                 userLocationMarker.setLatLng(L.latLng(
-                    from.lat + (ll[0] - from.lat) * t,
-                    from.lng + (ll[1] - from.lng) * t
+                    from.lat + (ll[0] - from.lat) * e,
+                    from.lng + (ll[1] - from.lng) * e
                 ));
                 userMarkerAnim = t < 1 ? requestAnimationFrame(step) : null;
             };
             userMarkerAnim = requestAnimationFrame(step);
+            return lastUserLatLng;
         }
 
         function stopNavigation(announce = true, keepMarkers = false) {
@@ -822,8 +875,7 @@ try {
             if (locationWatchId !== null) navigator.geolocation.clearWatch(locationWatchId);
             locationWatchId = navigator.geolocation.watchPosition(position => {
                 if (!activePlot) return;
-                updateUserMarker(position);
-                const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+                const userLatLng = updateUserMarker(position);
                 const dist = userLatLng.distanceTo(L.latLng(activePlot.lat, activePlot.lng));
                 if (dist <= ARRIVED_THRESHOLD) {
                     const arrivedMsg = `You have arrived at ${activePlot.name}, plot ${activePlot.plotCode}.`;
@@ -1062,8 +1114,7 @@ try {
 
         function onFirstFix(position) {
             if (!activePlot) return;
-            updateUserMarker(position);
-            const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+            const userLatLng = updateUserMarker(position);
             const plotLatLng = L.latLng(activePlot.lat, activePlot.lng);
 
             if (destinationMarker) map.removeLayer(destinationMarker);
